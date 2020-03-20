@@ -1,0 +1,17 @@
+{
+  "name": "r3smil3-pack",
+  "version": "1.0.3",
+  "description": "My react components",
+  "main": "./src",
+  "author": "Albert Zawadzki",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlbertZawadzki/r3smil3-pack"
+  },
+  "keywords": ["r3smil3", "react"],
+  "bugs": {
+    "url": "https://github.com/AlbertZawadzki/r3smil3-pack/issues"
+  },
+  "homepage": "https://github.com/AlbertZawadzki/r3smil3-pack"
+}
