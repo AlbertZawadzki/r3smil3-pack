@@ -7,12 +7,12 @@ const sliderSetting = {
   arrows: {
     left: {
       content: <div>left</div>,
-      styles: { backgroundColor: "red" },
+      styles: { backgroundColor: "red" }
     },
     right: {
       content: <div>right</div>,
-      styles: { backgroundColor: "lime" },
-    },
+      styles: { backgroundColor: "lime" }
+    }
   },
   showArrows: true,
   autoPlay: false,
@@ -21,10 +21,10 @@ const sliderSetting = {
 
   responsive: [
     {
-      breakPoint: 1300,
+      breakPoint: 1300
     },
     {
-      breakPoint: 1200,
-    },
-  ],
-}
+      breakPoint: 1200
+    }
+  ]
+};
