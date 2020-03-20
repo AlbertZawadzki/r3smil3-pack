@@ -5,21 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _slider = _interopRequireDefault(require("./slider"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var _default = {
-  Slider: _slider.default
-};
-exports.default = _default;
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
 var _react = _interopRequireDefault(require("react"));
 
 var _uuid = require("uuid");
@@ -804,35 +789,3 @@ function (_React$Component) {
 }(_react.default.Component);
 
 exports.default = Slider;
-"use strict";
-
-var sliderSetting = {
-  fitToContainer: true,
-  startNumber: 0,
-  draggable: true,
-  vertical: false,
-  rotateable: true,
-  arrows: {
-    left: {
-      content: React.createElement("div", null, "left"),
-      styles: {
-        backgroundColor: "red"
-      }
-    },
-    right: {
-      content: React.createElement("div", null, "right"),
-      styles: {
-        backgroundColor: "lime"
-      }
-    }
-  },
-  showArrows: true,
-  autoPlay: false,
-  autoPlayLeftOrUp: false,
-  autoPlayTime: 5000,
-  responsive: [{
-    breakPoint: 1300
-  }, {
-    breakPoint: 1200
-  }]
-};

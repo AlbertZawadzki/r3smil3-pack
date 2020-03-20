@@ -1,8 +1,8 @@
 {
   "name": "r3smil3-pack",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "My react components",
-  "main": "./src",
+  "main": "index.js",
   "author": "Albert Zawadzki",
   "license": "MIT",
   "repository": {
