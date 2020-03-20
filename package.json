@@ -1,6 +1,6 @@
 {
   "name": "r3smil3-pack",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "My react components",
   "main": "./src",
   "author": "Albert Zawadzki",
@@ -16,5 +16,21 @@
   "bugs": {
     "url": "https://github.com/AlbertZawadzki/r3smil3-pack/issues"
   },
-  "homepage": "https://github.com/AlbertZawadzki/r3smil3-pack"
+  "homepage": "https://github.com/AlbertZawadzki/r3smil3-pack",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/babel src --out-file index.js"
+  },
+  "peerDependencies": {
+    "react": "^16.6.1",
+    "react-dom": "^16.6.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/preset-react": "^7.0.0",
+    "react": "^16.6.1",
+    "react-dom": "^16.6.3"
+  }
 }
