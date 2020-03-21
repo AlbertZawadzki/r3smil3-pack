@@ -11,12 +11,6 @@ My own ReactJS components
 My own ReactJS components, currently in the pack:<br/>
 <ol><li><a href="#slider">Slider</a></li></ol>
 
-<style>
-.error {
-  color:red;
-}
-</style>
-
 <h1 id="slider">Slider</h1>
 
 <table>
@@ -154,7 +148,7 @@ My own ReactJS components, currently in the pack:<br/>
      Sets sliders width and height to 100% of sliders wrapper and hides everything outside of it
     </td>
   </tr>
-   <tr class="error">
+   <tr style="color:red;">
     <td>
       recurrence
     </td>
