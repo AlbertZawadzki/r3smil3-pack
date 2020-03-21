@@ -123,9 +123,8 @@ function (_React$Component) {
         exact: {
           pos: 0,
           found: false
-        } //Find closest one
-
-      };
+        }
+      }; //Find closest one
 
       for (var _i = 0; _i < _this.endingLines.length; _i++) {
         if (_this.endingLines[_i] === -_this.sliderPosition) {
@@ -270,9 +269,8 @@ function (_React$Component) {
       var vertical = _this.state.vertical;
       var currentMousePosition = {
         x: window.event.clientX,
-        y: window.event.clientY //Tacticle
-
-      };
+        y: window.event.clientY
+      }; //Tacticle
 
       if (window.event.touches !== undefined) {
         currentMousePosition = {
@@ -328,15 +326,13 @@ function (_React$Component) {
 
     _this.setSliderStyles = function () {
       var _this$state2 = _this.state,
-          center = _this$state2.center,
           children = _this$state2.children,
           draggable = _this$state2.draggable,
           fitToContainer = _this$state2.fitToContainer,
           sliderPosition = _this$state2.sliderPosition,
           recurrence = _this$state2.recurrence,
           rotateable = _this$state2.rotateable,
-          vertical = _this$state2.vertical,
-          visibleItems = _this$state2.visibleItems;
+          vertical = _this$state2.vertical;
       var parentSize = 0;
       var allChildrenLength = 0;
       var slider = document.getElementById(_this.sliderWrapperId); //get max size of slider
@@ -347,19 +343,6 @@ function (_React$Component) {
         } else {
           parentSize = slider.parentElement.offsetWidth;
         }
-      } //Styling slides
-
-
-      var slidesWidth, slidesHeight, slidesMargin;
-
-      if (center) {
-        slidesWidth = "auto";
-        slidesHeight = "auto";
-        slidesMargin = "auto";
-      } else {
-        slidesWidth = "auto";
-        slidesHeight = "auto";
-        slidesMargin = "initial";
       }
 
       var slidesWrapper;
@@ -383,8 +366,8 @@ function (_React$Component) {
           slides[i].style.justifyContent = "space-evenly";
           slides[i].style.alignItems = "center";
           slides[i].style.width = slidesWidth;
-          slides[i].style.height = slidesHeight;
-          slides[i].style.margin = slidesMargin;
+          slides[i].style.height = "auto";
+          slides[i].style.margin = "auto";
         }
 
         var sliderSize = children.length * recurrence * parentSize / visibleItems;
@@ -504,31 +487,14 @@ function (_React$Component) {
     _this.setSettings = function (settings) {
       var arrows = settings.arrows,
           autoPlay = settings.autoPlay,
-          autoPlayLeftOrUp = settings.autoPlayLeftOrUp,
-          autoPlayTime = settings.autoPlayTime,
-          center = settings.center,
           draggable = settings.draggable,
           fitToContainer = settings.fitToContainer,
           recurrence = settings.recurrence,
           rotateable = settings.rotateable,
-          showArrows = settings.showArrows,
           startNumber = settings.startNumber,
           vertical = settings.vertical;
-      if (typeof arrows !== "undefined") _this.setState({
-        arrows: arrows
-      });
-      if (typeof autoPlay !== "undefined") _this.setState({
-        autoPlay: autoPlay
-      });
-      if (typeof autoPlayLeftOrUp !== "undefined") _this.setState({
-        autoPlayLeftOrUp: autoPlayLeftOrUp
-      });
-      if (typeof autoPlayTime !== "undefined") _this.setState({
-        autoPlayTime: autoPlayTime
-      });
-      if (typeof center !== "undefined") _this.setState({
-        center: center
-      });
+      if (typeof arrows !== "undefined") _this.setState(_objectSpread({}, arrows));
+      if (typeof autoPlay !== "undefined") _this.setState(_objectSpread({}, autoPlay));
       if (typeof draggable !== "undefined") _this.setState({
         draggable: draggable
       });
@@ -540,9 +506,6 @@ function (_React$Component) {
       });
       if (typeof rotateable !== "undefined") _this.setState({
         rotateable: rotateable
-      });
-      if (typeof showArrows !== "undefined") _this.setState({
-        showArrows: showArrows
       });
       if (typeof startNumber !== "undefined") _this.setState({
         startNumber: startNumber
@@ -591,7 +554,6 @@ function (_React$Component) {
           children = _this$state4.children,
           recurrence = _this$state4.recurrence,
           rotateable = _this$state4.rotateable,
-          showArrows = _this$state4.showArrows,
           arrows = _this$state4.arrows;
 
       var rotationLeft = function rotationLeft() {
@@ -617,7 +579,7 @@ function (_React$Component) {
         }, 100);
       }, 100);
 
-      if (showArrows) {
+      if (arrows.show) {
         return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement("div", {
           id: _this.sliderWrapperId,
           onMouseOver: function onMouseOver() {
@@ -690,16 +652,14 @@ function (_React$Component) {
     _this.autoStart = function () {
       var _this$state5 = _this.state,
           autoPlay = _this$state5.autoPlay,
-          autoPlayLeftOrUp = _this$state5.autoPlayLeftOrUp,
-          autoPlayTime = _this$state5.autoPlayTime,
           rotateable = _this$state5.rotateable;
 
-      if (autoPlay && rotateable) {
+      if (autoPlay.on && rotateable) {
         _this.autoPlay = setInterval(function () {
           if (_this.sliderNotFocused) {
-            if (autoPlayLeftOrUp) _this.rotateableMoveSliderLeft();else _this.rotateableMoveSliderRight();
+            if (autoPlay.leftOrUp) _this.rotateableMoveSliderLeft();else _this.rotateableMoveSliderRight();
           }
-        }, autoPlayTime);
+        }, autoPlay.time);
       }
     };
 
@@ -725,6 +685,7 @@ function (_React$Component) {
     _this.state = {
       allChildren: [],
       arrows: {
+        show: true,
         left: {
           content: "Left",
           styles: {}
@@ -734,26 +695,23 @@ function (_React$Component) {
           styles: {}
         }
       },
-      autoPlay: true,
-      autoPlayLeftOrUp: false,
-      autoPlayTime: 1000,
-      center: false,
+      autoPlay: {
+        on: true,
+        leftOrUp: false,
+        time: 5000
+      },
       children: [],
       draggable: true,
-      draggNumber: 1,
       fitToContainer: true,
       recurrence: 5,
       rotateable: true,
-      showArrows: true,
       siteHeight: _siteHeight,
       siteWidth: _siteWidth,
       sliderPosition: {
         x: 0,
         y: 0
       },
-      startNumber: 0,
-      vertical: false,
-      visibleItems: 1
+      vertical: false
     };
     return _this;
   }
