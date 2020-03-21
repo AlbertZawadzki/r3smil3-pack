@@ -1,408 +1,391 @@
-import React from "react"
-import { v4 } from "uuid"
+import React from "react";
+import { v4 } from "uuid";
 
 export default class Slider extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
 
-    this.sliderWrapperId = v4()
-    this.sliderInnerWrapperId = v4()
+    this.sliderWrapperId = v4();
+    this.sliderInnerWrapperId = v4();
 
-    let siteWidth = 0
-    let siteHeight = 0
-    siteWidth = window.innerWidth
-    siteHeight = window.innerHeight
+    let siteWidth = 0;
+    let siteHeight = 0;
+    siteWidth = window.innerWidth;
+    siteHeight = window.innerHeight;
 
-    this.allChildrenLength = 0
-    this.allowToDrag = false
-    this.attractableSlider = false
-    this.autoPlay = false
-    this.endingLines = []
-    this.firstSlide = 0
-    this.previousMousePosition = { x: 0, y: 0 }
-    this.sliderNotFocused = true
-    this.sliderWidth = 0
-    this.sliderPosition = 0
+    this.allChildrenLength = 0;
+    this.allowToDrag = false;
+    this.attractableSlider = false;
+    this.autoPlay = false;
+    this.endingLines = [];
+    this.firstSlide = 0;
+    this.previousMousePosition = { x: 0, y: 0 };
+    this.sliderNotFocused = true;
+    this.sliderWidth = 0;
+    this.sliderPosition = 0;
 
     this.state = {
       allChildren: [],
       arrows: {
+        show: true,
         left: { content: "Left", styles: {} },
-        right: { content: "Right", styles: {} },
+        right: { content: "Right", styles: {} }
       },
       autoPlay: true,
       autoPlayLeftOrUp: false,
       autoPlayTime: 1000,
-      center: false,
       children: [],
       draggable: true,
-      draggNumber: 1,
       fitToContainer: true,
       recurrence: 5,
       rotateable: true,
-      showArrows: true,
       siteHeight,
       siteWidth,
       sliderPosition: { x: 0, y: 0 },
-      startNumber: 0,
       vertical: false,
-      visibleItems: 1,
-    }
+      visibleItems: 1
+    };
   }
 
   getSiteSize = () => {
-    let siteWidth = 0
-    let siteHeight = 0
-    siteWidth = window.innerWidth
-    siteHeight = window.innerHeight
-    this.setState({ siteHeight, siteWidth })
-  }
+    let siteWidth = 0;
+    let siteHeight = 0;
+    siteWidth = window.innerWidth;
+    siteHeight = window.innerHeight;
+    this.setState({ siteHeight, siteWidth });
+  };
 
   handledEvents = () => {
-    window.addEventListener("resize", () => this.getSiteSize())
-    window.addEventListener("resize", () => this.chooseSettings())
-    window.addEventListener("mousemove", () => this.followMouse())
-    window.addEventListener("mouseup", () => this.stopDragSlider())
-    window.addEventListener("touchmove", () => this.followMouse())
-    window.addEventListener("touchend", () => this.stopDragSlider())
-  }
+    window.addEventListener("resize", () => this.getSiteSize());
+    window.addEventListener("resize", () => this.chooseSettings());
+    window.addEventListener("mousemove", () => this.followMouse());
+    window.addEventListener("mouseup", () => this.stopDragSlider());
+    window.addEventListener("touchmove", () => this.followMouse());
+    window.addEventListener("touchend", () => this.stopDragSlider());
+  };
 
   dragSlider = () => {
-    this.allowToDrag = true
-    this.attractableSlider = false
-  }
+    this.allowToDrag = true;
+    this.attractableSlider = false;
+  };
 
   stopDragSlider = () => {
-    this.allowToDrag = false
-    this.attractableSlider = true
+    this.allowToDrag = false;
+    this.attractableSlider = true;
 
     setTimeout(() => {
-      this.allowToDrag = false
-      this.attractableSlider = true
-      this.setSlidesClassNames()
-    }, 100)
-  }
+      this.allowToDrag = false;
+      this.attractableSlider = true;
+      this.setSlidesClassNames();
+    }, 100);
+  };
 
   attractSlider = () => {
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
-    const { vertical, recurrence, rotateable } = this.state
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
+    const { vertical, recurrence, rotateable } = this.state;
 
-    let items = slidesWrapper.childNodes
-    this.endingLines = [0]
-    let start = 0
+    let items = slidesWrapper.childNodes;
+    this.endingLines = [0];
+    let start = 0;
 
     //Calculate slides break points
     for (let i = 0; i < items.length; i++) {
-      start += vertical ? items[i].offsetHeight : items[i].offsetWidth
+      start += vertical ? items[i].offsetHeight : items[i].offsetWidth;
 
-      this.endingLines.push(start)
+      this.endingLines.push(start);
     }
 
     let closest = {
       smaller: { length: 0, pos: 0 },
       larger: { length: Infinity, pos: 0 },
-      exact: { pos: 0, found: false },
-    }
+      exact: { pos: 0, found: false }
+    };
 
     //Find closest one
     for (let i = 0; i < this.endingLines.length; i++) {
       if (this.endingLines[i] === -this.sliderPosition) {
-        closest.exact.pos = i
-        closest.exact.found = true
-        break
+        closest.exact.pos = i;
+        closest.exact.found = true;
+        break;
       }
 
       if (this.endingLines[i] < -this.sliderPosition) {
         closest.smaller.length = Math.abs(
           this.endingLines[i] + this.sliderPosition
-        )
-        closest.smaller.pos = i
+        );
+        closest.smaller.pos = i;
       } else if (this.endingLines[i] > -this.sliderPosition) {
         closest.larger.length = Math.abs(
           this.endingLines[i] + this.sliderPosition
-        )
-        closest.larger.pos = i
-        break
+        );
+        closest.larger.pos = i;
+        break;
       }
     }
 
-    let minimum
+    let minimum;
 
     if (closest.exact.found) {
-      minimum = closest.exact.pos
+      minimum = closest.exact.pos;
     } else {
       if (closest.smaller.length < closest.larger.length) {
-        minimum = closest.smaller.pos
+        minimum = closest.smaller.pos;
       } else {
-        minimum = closest.larger.pos
+        minimum = closest.larger.pos;
       }
     }
 
     if (rotateable) {
       setTimeout(() => {
         if (minimum === 0) {
-          let closestSlide
+          let closestSlide;
           if (this.firstSlide >= 3 * (items.length / recurrence)) {
-            this.firstSlide = items.length / recurrence
-            slidesWrapper.style.transition = "0s"
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            this.firstSlide = items.length / recurrence;
+            slidesWrapper.style.transition = "0s";
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
+              : "translateX(" + -this.sliderPosition + "px)";
 
             setTimeout(() => {
-              slidesWrapper.style.transition = "0.25s"
-            }, 100)
+              slidesWrapper.style.transition = "0.25s";
+            }, 100);
           } else if (this.firstSlide <= items.length / recurrence) {
-            this.firstSlide = 3 * (items.length / recurrence)
-            slidesWrapper.style.transition = "0s"
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            this.firstSlide = 3 * (items.length / recurrence);
+            slidesWrapper.style.transition = "0s";
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
+              : "translateX(" + -this.sliderPosition + "px)";
 
             setTimeout(() => {
-              slidesWrapper.style.transition = "0.25s"
-            }, 100)
+              slidesWrapper.style.transition = "0.25s";
+            }, 100);
           } else {
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
+              : "translateX(" + -this.sliderPosition + "px)";
 
-            slidesWrapper.style.transition = "0.25s"
+            slidesWrapper.style.transition = "0.25s";
           }
         } else if (this.attractableSlider) {
-          this.firstSlide = minimum
-          let closestSlide
+          this.firstSlide = minimum;
+          let closestSlide;
           if (this.firstSlide >= 3 * (items.length / recurrence)) {
-            this.firstSlide = items.length / recurrence
-            slidesWrapper.style.transition = "all 0s"
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            this.firstSlide = items.length / recurrence;
+            slidesWrapper.style.transition = "all 0s";
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
+              : "translateX(" + -this.sliderPosition + "px)";
 
             setTimeout(() => {
-              slidesWrapper.style.transition = "0.25s"
-            }, 100)
+              slidesWrapper.style.transition = "0.25s";
+            }, 100);
           } else if (this.firstSlide <= items.length / recurrence) {
-            this.firstSlide = 3 * (items.length / recurrence)
-            slidesWrapper.style.transition = "all 0s"
+            this.firstSlide = 3 * (items.length / recurrence);
+            slidesWrapper.style.transition = "all 0s";
 
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
+              : "translateX(" + -this.sliderPosition + "px)";
 
             setTimeout(() => {
-              slidesWrapper.style.transition = "0.25s"
-            }, 100)
+              slidesWrapper.style.transition = "0.25s";
+            }, 100);
           } else {
-            closestSlide = this.endingLines[this.firstSlide]
-            this.sliderPosition = closestSlide
+            closestSlide = this.endingLines[this.firstSlide];
+            this.sliderPosition = closestSlide;
 
             slidesWrapper.style.transform = vertical
               ? "translateY(" + -this.sliderPosition + "px)"
-              : "translateX(" + -this.sliderPosition + "px)"
-            slidesWrapper.style.transition = "0.25s"
+              : "translateX(" + -this.sliderPosition + "px)";
+            slidesWrapper.style.transition = "0.25s";
           }
         }
-      }, 250)
+      }, 250);
     } else {
-      this.firstSlide = minimum
+      this.firstSlide = minimum;
       setTimeout(() => {
         if (this.attractableSlider) {
-          let closestSlide = this.endingLines[this.firstSlide]
+          let closestSlide = this.endingLines[this.firstSlide];
 
           if (this.sliderWidth > this.allChildrenLength - closestSlide) {
             closestSlide -=
-              closestSlide + this.sliderWidth - this.allChildrenLength
+              closestSlide + this.sliderWidth - this.allChildrenLength;
           }
 
-          this.sliderPosition = closestSlide
+          this.sliderPosition = closestSlide;
           slidesWrapper.style.transform = vertical
             ? "translateY(" + -closestSlide + "px)"
-            : "translateX(" + -closestSlide + "px)"
+            : "translateX(" + -closestSlide + "px)";
         }
-      }, 250)
+      }, 250);
     }
-  }
+  };
 
   setSlidesClassNames = () =>
     setTimeout(() => {
-      const { vertical } = this.state
-      let slider = document.getElementById(this.sliderWrapperId)
-      let slidesWrapper = slider.childNodes[0]
-      let slides = slidesWrapper.childNodes
+      const { vertical } = this.state;
+      let slider = document.getElementById(this.sliderWrapperId);
+      let slidesWrapper = slider.childNodes[0];
+      let slides = slidesWrapper.childNodes;
 
-      let minimum = Infinity
+      let minimum = Infinity;
       for (let i = 0; i < slides.length; i++) {
-        let slidePosition
-        let nextSlidePosition
+        let slidePosition;
+        let nextSlidePosition;
 
         if (vertical) {
-          slidePosition = slides[i].getBoundingClientRect().top
+          slidePosition = slides[i].getBoundingClientRect().top;
           nextSlidePosition =
-            slides[i].getBoundingClientRect().top + slides[i].offsetHeight
+            slides[i].getBoundingClientRect().top + slides[i].offsetHeight;
         } else {
-          slidePosition = slides[i].getBoundingClientRect().left
+          slidePosition = slides[i].getBoundingClientRect().left;
           nextSlidePosition =
-            slides[i].getBoundingClientRect().left + slides[i].offsetWidth
+            slides[i].getBoundingClientRect().left + slides[i].offsetWidth;
         }
 
         if (slidePosition > 0 && nextSlidePosition < this.sliderWidth) {
           if (minimum > i) {
-            minimum = i
+            minimum = i;
           }
-          slides[i].className = "slide-visible" + i
+          slides[i].className = "slide-visible" + i;
         } else if (slidePosition > 0 && slidePosition < this.sliderWidth)
-          slides[i].className = "slide-partial" + i
-        else slides[i].className = "slide-invisible" + i
+          slides[i].className = "slide-partial" + i;
+        else slides[i].className = "slide-invisible" + i;
       }
-    }, 100)
+    }, 100);
 
   followMouse = () => {
-    let { vertical } = this.state
+    let { vertical } = this.state;
 
     let currentMousePosition = {
       x: window.event.clientX,
-      y: window.event.clientY,
-    }
+      y: window.event.clientY
+    };
 
     //Tacticle
     if (window.event.touches !== undefined) {
       currentMousePosition = {
         x: window.event.touches[0].clientX,
-        y: window.event.touches[0].clientY,
-      }
+        y: window.event.touches[0].clientY
+      };
     }
 
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
 
     if (this.allowToDrag) {
       if (vertical) {
         //Vertical movement
-        let movement = currentMousePosition.y - this.previousMousePosition.y
+        let movement = currentMousePosition.y - this.previousMousePosition.y;
 
         //Tactile handling
         if (window.event.touches !== undefined) {
           movement =
-            currentMousePosition.y > this.previousMousePosition.y ? 12 : -12
+            currentMousePosition.y > this.previousMousePosition.y ? 12 : -12;
         }
 
         let previousPositionY =
-          slidesWrapper.style.transform.split("(")[1].split("px)")[0] * 1.0
+          slidesWrapper.style.transform.split("(")[1].split("px)")[0] * 1.0;
 
-        let newPositionY = movement + previousPositionY
+        let newPositionY = movement + previousPositionY;
 
-        slidesWrapper.style.transition = "transform 0s ease-in-out"
-        slidesWrapper.style.transform = "translateY(" + newPositionY + "px)"
-        this.sliderPosition = newPositionY
+        slidesWrapper.style.transition = "transform 0s ease-in-out";
+        slidesWrapper.style.transform = "translateY(" + newPositionY + "px)";
+        this.sliderPosition = newPositionY;
 
         setTimeout(() => {
-          slidesWrapper.style.transition = "transform 0.25s ease-in-out"
-        }, 100)
+          slidesWrapper.style.transition = "transform 0.25s ease-in-out";
+        }, 100);
       } else {
         //Horizontal movement
-        let movement = currentMousePosition.x - this.previousMousePosition.x
+        let movement = currentMousePosition.x - this.previousMousePosition.x;
 
         //Tactile handling
         if (window.event.touches !== undefined) {
           movement =
-            currentMousePosition.x > this.previousMousePosition.x ? 12 : -12
+            currentMousePosition.x > this.previousMousePosition.x ? 12 : -12;
         }
 
         let previousPositionX =
-          slidesWrapper.style.transform.split("(")[1].split("px)")[0] * 1.0
+          slidesWrapper.style.transform.split("(")[1].split("px)")[0] * 1.0;
 
-        let newPositionX = movement + previousPositionX
+        let newPositionX = movement + previousPositionX;
 
-        slidesWrapper.style.transition = "transform 0s ease-in-out"
-        slidesWrapper.style.transform = "translateX(" + newPositionX + "px)"
-        this.sliderPosition = newPositionX
+        slidesWrapper.style.transition = "transform 0s ease-in-out";
+        slidesWrapper.style.transform = "translateX(" + newPositionX + "px)";
+        this.sliderPosition = newPositionX;
 
         setTimeout(() => {
-          slidesWrapper.style.transition = "transform 0.25s ease-in-out"
-        }, 100)
+          slidesWrapper.style.transition = "transform 0.25s ease-in-out";
+        }, 100);
       }
 
-      this.attractSlider()
+      this.attractSlider();
     }
 
-    this.previousMousePosition = currentMousePosition
-  }
+    this.previousMousePosition = currentMousePosition;
+  };
 
   componentWillUnmount() {
-    window.removeEventListener("resize")
-    window.removeEventListener("mousemove")
-    window.removeEventListener("mousedown")
-    window.removeEventListener("mouseup")
-    window.removeEventListener("touchstart")
-    window.removeEventListener("touchend")
-    window.removeEventListener("touchmove")
-    clearInterval(this.autoPlay)
+    window.removeEventListener("resize");
+    window.removeEventListener("mousemove");
+    window.removeEventListener("mousedown");
+    window.removeEventListener("mouseup");
+    window.removeEventListener("touchstart");
+    window.removeEventListener("touchend");
+    window.removeEventListener("touchmove");
+    clearInterval(this.autoPlay);
   }
 
   setSliderStyles = () => {
     let {
-      center,
       children,
       draggable,
       fitToContainer,
       sliderPosition,
       recurrence,
       rotateable,
-      vertical,
-      visibleItems,
-    } = this.state
+      vertical
+    } = this.state;
 
-    let parentSize = 0
-    let allChildrenLength = 0
+    let parentSize = 0;
+    let allChildrenLength = 0;
 
-    let slider = document.getElementById(this.sliderWrapperId)
+    let slider = document.getElementById(this.sliderWrapperId);
 
     //get max size of slider
     if (slider !== null) {
       if (vertical) {
-        parentSize = slider.parentElement.offsetHeight
+        parentSize = slider.parentElement.offsetHeight;
       } else {
-        parentSize = slider.parentElement.offsetWidth
+        parentSize = slider.parentElement.offsetWidth;
       }
     }
 
-    //Styling slides
-    let slidesWidth, slidesHeight, slidesMargin
-    if (center) {
-      slidesWidth = "auto"
-      slidesHeight = "auto"
-      slidesMargin = "auto"
-    } else {
-      slidesWidth = "auto"
-      slidesHeight = "auto"
-      slidesMargin = "initial"
-    }
-
-    let slidesWrapper
-    let slides
+    let slidesWrapper;
+    let slides;
 
     if (slider !== null) {
-      slidesWrapper = slider.childNodes[0]
-      slides = slidesWrapper.childNodes
+      slidesWrapper = slider.childNodes[0];
+      slides = slidesWrapper.childNodes;
 
       for (let i = 0; i < slides.length; i++) {
         //Get all items repe
@@ -410,149 +393,149 @@ export default class Slider extends React.Component {
           if (i < slides.length / recurrence) {
             allChildrenLength += vertical
               ? slides[i].offsetHeight
-              : slides[i].offsetWidth
+              : slides[i].offsetWidth;
           }
         } else {
           allChildrenLength += vertical
             ? slides[i].offsetHeight
-            : slides[i].offsetWidth
+            : slides[i].offsetWidth;
         }
 
-        slides[i].style.display = "flex"
-        slides[i].style.justifyContent = "space-evenly"
-        slides[i].style.alignItems = "center"
-        slides[i].style.width = slidesWidth
-        slides[i].style.height = slidesHeight
-        slides[i].style.margin = slidesMargin
+        slides[i].style.display = "flex";
+        slides[i].style.justifyContent = "space-evenly";
+        slides[i].style.alignItems = "center";
+        slides[i].style.width = slidesWidth;
+        slides[i].style.height = "auto";
+        slides[i].style.margin = "auto";
       }
       const sliderSize =
-        (children.length * recurrence * parentSize) / visibleItems
+        (children.length * recurrence * parentSize) / visibleItems;
 
-      this.allChildrenLength = allChildrenLength
-      this.sliderWidth = vertical ? slider.offsetHeight : slider.offsetWidth
+      this.allChildrenLength = allChildrenLength;
+      this.sliderWidth = vertical ? slider.offsetHeight : slider.offsetWidth;
 
       if (slider && draggable) {
-        slider.addEventListener("mousedown", () => this.dragSlider())
-        slider.addEventListener("touchstart", () => this.dragSlider())
+        slider.addEventListener("mousedown", () => this.dragSlider());
+        slider.addEventListener("touchstart", () => this.dragSlider());
       }
 
       if (!rotateable) {
-        recurrence = 1
+        recurrence = 1;
       }
 
       //Styling slides wrapper
-      slidesWrapper.style.width = !vertical ? sliderSize : "100%"
-      slidesWrapper.style.height = vertical ? sliderSize : "100%"
-      slidesWrapper.style.display = "flex"
-      slidesWrapper.style.flexDirection = vertical ? "column" : "row"
-      slidesWrapper.style.transition = "transform 0.25s ease-in-out"
+      slidesWrapper.style.width = !vertical ? sliderSize : "100%";
+      slidesWrapper.style.height = vertical ? sliderSize : "100%";
+      slidesWrapper.style.display = "flex";
+      slidesWrapper.style.flexDirection = vertical ? "column" : "row";
+      slidesWrapper.style.transition = "transform 0.25s ease-in-out";
       if (recurrence > 1) {
-        this.sliderPosition = 2 * allChildrenLength
+        this.sliderPosition = 2 * allChildrenLength;
         slidesWrapper.style.transform = vertical
           ? "translateY(-" + 2 * allChildrenLength + "px)"
-          : "translateX(-" + 2 * allChildrenLength + "px)"
+          : "translateX(-" + 2 * allChildrenLength + "px)";
       } else {
         slidesWrapper.style.transform = vertical
           ? "translateY(" + sliderPosition.y + "px)"
-          : "translateX(" + sliderPosition.x + "px)"
+          : "translateX(" + sliderPosition.x + "px)";
       }
 
       //Styling slider
-      slider.style.width = fitToContainer ? "100%" : "auto"
-      slider.style.height = fitToContainer ? "100%" : "auto"
-      slider.style.overflow = fitToContainer ? "hidden" : "visible"
+      slider.style.width = fitToContainer ? "100%" : "auto";
+      slider.style.height = fitToContainer ? "100%" : "auto";
+      slider.style.overflow = fitToContainer ? "hidden" : "visible";
     }
-  }
+  };
 
   nonRotateableMoveSliderLeft = () => {
-    const { vertical } = this.state
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
-    let slide
-    let movement
+    const { vertical } = this.state;
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
+    let slide;
+    let movement;
 
     if (this.firstSlide === 0) {
-      movement = 0
+      movement = 0;
     } else {
-      slide = slidesWrapper.childNodes[--this.firstSlide]
-      movement = vertical ? slide.offsetHeight : slide.offsetWidth
+      slide = slidesWrapper.childNodes[--this.firstSlide];
+      movement = vertical ? slide.offsetHeight : slide.offsetWidth;
     }
 
-    this.sliderPosition = movement - this.sliderPosition
+    this.sliderPosition = movement - this.sliderPosition;
 
     slidesWrapper.style.transform = vertical
       ? "translateY(" + this.sliderPosition + "px)"
-      : "translateX(" + this.sliderPosition + "px)"
+      : "translateX(" + this.sliderPosition + "px)";
 
     setTimeout(() => {
-      this.attractSlider()
-      this.setSlidesClassNames()
-    }, 100)
-  }
+      this.attractSlider();
+      this.setSlidesClassNames();
+    }, 100);
+  };
 
   nonRotateableMoveSliderRight = () => {
-    const { vertical } = this.state
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
-    let slide
-    let movement
+    const { vertical } = this.state;
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
+    let slide;
+    let movement;
 
     if (this.firstSlide === slidesWrapper.childNodes.length - 1) {
-      movement = 0
+      movement = 0;
     } else {
-      slide = slidesWrapper.childNodes[this.firstSlide++]
-      movement = vertical ? slide.offsetHeight : slide.offsetWidth
+      slide = slidesWrapper.childNodes[this.firstSlide++];
+      movement = vertical ? slide.offsetHeight : slide.offsetWidth;
     }
 
-    this.sliderPosition = -this.sliderPosition - movement
+    this.sliderPosition = -this.sliderPosition - movement;
 
     slidesWrapper.style.transform = vertical
       ? "translateY(" + this.sliderPosition + "px)"
-      : "translateX(" + this.sliderPosition + "px)"
+      : "translateX(" + this.sliderPosition + "px)";
 
     setTimeout(() => {
-      this.attractSlider()
-      this.setSlidesClassNames()
-    }, 260)
-  }
+      this.attractSlider();
+      this.setSlidesClassNames();
+    }, 260);
+  };
 
   rotateableMoveSliderLeft = () => {
-    const { vertical } = this.state
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
-    let slide = slidesWrapper.childNodes[--this.firstSlide]
-    let movement = vertical ? slide.offsetHeight : slide.offsetWidth
+    const { vertical } = this.state;
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
+    let slide = slidesWrapper.childNodes[--this.firstSlide];
+    let movement = vertical ? slide.offsetHeight : slide.offsetWidth;
 
-    this.sliderPosition -= movement
+    this.sliderPosition -= movement;
 
     slidesWrapper.style.transform = vertical
       ? "translateY(" + -this.sliderPosition + "px)"
-      : "translateX(" + -this.sliderPosition + "px)"
+      : "translateX(" + -this.sliderPosition + "px)";
 
     setTimeout(() => {
-      this.attractSlider()
-      this.setSlidesClassNames()
-    }, 260)
-  }
+      this.attractSlider();
+      this.setSlidesClassNames();
+    }, 260);
+  };
 
   rotateableMoveSliderRight = () => {
-    const { vertical } = this.state
-    let slider = document.getElementById(this.sliderWrapperId)
-    let slidesWrapper = slider.childNodes[0]
-    let slide = slidesWrapper.childNodes[this.firstSlide++]
-    let movement = vertical ? slide.offsetHeight : slide.offsetWidth
+    const { vertical } = this.state;
+    let slider = document.getElementById(this.sliderWrapperId);
+    let slidesWrapper = slider.childNodes[0];
+    let slide = slidesWrapper.childNodes[this.firstSlide++];
+    let movement = vertical ? slide.offsetHeight : slide.offsetWidth;
 
-    this.sliderPosition += movement
+    this.sliderPosition += movement;
 
     slidesWrapper.style.transform = vertical
       ? "translateY(" + -this.sliderPosition + "px)"
-      : "translateX(" + -this.sliderPosition + "px)"
+      : "translateX(" + -this.sliderPosition + "px)";
 
     setTimeout(() => {
-      this.attractSlider()
-      this.setSlidesClassNames()
-    }, 260)
-  }
+      this.attractSlider();
+      this.setSlidesClassNames();
+    }, 260);
+  };
 
   setSettings = settings => {
     const {
@@ -560,38 +543,35 @@ export default class Slider extends React.Component {
       autoPlay,
       autoPlayLeftOrUp,
       autoPlayTime,
-      center,
       draggable,
       fitToContainer,
       recurrence,
       rotateable,
-      showArrows,
       startNumber,
-      vertical,
-    } = settings
+      vertical
+    } = settings;
 
-    if (typeof arrows !== "undefined") this.setState({ arrows })
-    if (typeof autoPlay !== "undefined") this.setState({ autoPlay })
+    if (typeof arrows !== "undefined") this.setState({ arrows });
+    if (typeof autoPlay !== "undefined") this.setState({ autoPlay });
     if (typeof autoPlayLeftOrUp !== "undefined")
-      this.setState({ autoPlayLeftOrUp })
-    if (typeof autoPlayTime !== "undefined") this.setState({ autoPlayTime })
-    if (typeof center !== "undefined") this.setState({ center })
-    if (typeof draggable !== "undefined") this.setState({ draggable })
-    if (typeof fitToContainer !== "undefined") this.setState({ fitToContainer })
+      this.setState({ autoPlayLeftOrUp });
+    if (typeof autoPlayTime !== "undefined") this.setState({ autoPlayTime });
+    if (typeof draggable !== "undefined") this.setState({ draggable });
+    if (typeof fitToContainer !== "undefined")
+      this.setState({ fitToContainer });
     if (typeof recurrence !== "undefined" && recurrence > 3)
       this.setState({
-        recurrence,
-      })
-    if (typeof rotateable !== "undefined") this.setState({ rotateable })
-    if (typeof showArrows !== "undefined") this.setState({ showArrows })
-    if (typeof startNumber !== "undefined") this.setState({ startNumber })
-    if (typeof vertical !== "undefined") this.setState({ vertical })
-  }
+        recurrence
+      });
+    if (typeof rotateable !== "undefined") this.setState({ rotateable });
+    if (typeof startNumber !== "undefined") this.setState({ startNumber });
+    if (typeof vertical !== "undefined") this.setState({ vertical });
+  };
 
   chooseSettings = () => {
-    const { siteHeight, siteWidth } = this.state
-    const { responsive } = this.props
-    this.setSettings(this.props)
+    const { siteHeight, siteWidth } = this.state;
+    const { responsive } = this.props;
+    this.setSettings(this.props);
 
     //Choose responsive setup
     if (responsive && responsive.length > 0) {
@@ -602,49 +582,49 @@ export default class Slider extends React.Component {
         if (responsive[i].vertical) {
           //BreakPoint must be bigger than site height
           if (responsive[i].breakPoint > siteHeight) {
-            this.setSettings(this.props.responsive[i])
+            this.setSettings(this.props.responsive[i]);
           }
         }
         //horizontal setup
         else {
           //BreakPoint must be bigger than site width
           if (responsive[i].breakPoint > siteWidth) {
-            this.setSettings(this.props.responsive[i])
+            this.setSettings(this.props.responsive[i]);
           }
         }
       }
     }
-  }
+  };
 
   sliderIsFocused = status => {
-    this.sliderNotFocused = !status
-  }
+    this.sliderNotFocused = !status;
+  };
 
   renderSlides = () => {
-    let { children, recurrence, rotateable, showArrows, arrows } = this.state
+    let { children, recurrence, rotateable, arrows } = this.state;
     let rotationLeft = () =>
       rotateable
         ? this.rotateableMoveSliderLeft()
-        : this.nonRotateableMoveSliderLeft()
+        : this.nonRotateableMoveSliderLeft();
     let rotationRight = () =>
       rotateable
         ? this.rotateableMoveSliderRight()
-        : this.nonRotateableMoveSliderRight()
+        : this.nonRotateableMoveSliderRight();
 
-    if (!rotateable) recurrence = 1
-    let table = []
+    if (!rotateable) recurrence = 1;
+    let table = [];
     for (let i = 0; i < recurrence; i++) {
-      table.push(i)
+      table.push(i);
     }
 
     setTimeout(() => {
-      this.setSliderStyles()
+      this.setSliderStyles();
       setTimeout(() => {
-        this.setSlidesClassNames()
-      }, 100)
-    }, 100)
+        this.setSlidesClassNames();
+      }, 100);
+    }, 100);
 
-    if (showArrows) {
+    if (arrows.show) {
       return (
         <>
           <div
@@ -668,7 +648,7 @@ export default class Slider extends React.Component {
             {arrows.right.content}
           </div>
         </>
-      )
+      );
     } else
       return (
         <div
@@ -682,44 +662,44 @@ export default class Slider extends React.Component {
             )}
           </div>
         </div>
-      )
-  }
+      );
+  };
 
   sliderSetup = () => {
-    const { children, rotateable } = this.props
-    this.setState({ children, allChildren: children })
-    this.firstSlide = rotateable ? 2 * children.length : 0
-    this.chooseSettings()
-    this.handledEvents()
+    const { children, rotateable } = this.props;
+    this.setState({ children, allChildren: children });
+    this.firstSlide = rotateable ? 2 * children.length : 0;
+    this.chooseSettings();
+    this.handledEvents();
 
     setTimeout(() => {
-      this.setSlidesClassNames()
-      this.autoStart()
-    }, 100)
-  }
+      this.setSlidesClassNames();
+      this.autoStart();
+    }, 100);
+  };
 
   componentDidMount() {
-    this.sliderSetup()
+    this.sliderSetup();
   }
 
   autoStart = () => {
-    const { autoPlay, autoPlayLeftOrUp, autoPlayTime, rotateable } = this.state
+    const { autoPlay, autoPlayLeftOrUp, autoPlayTime, rotateable } = this.state;
 
     if (autoPlay && rotateable) {
       this.autoPlay = setInterval(() => {
         if (this.sliderNotFocused) {
-          if (autoPlayLeftOrUp) this.rotateableMoveSliderLeft()
-          else this.rotateableMoveSliderRight()
+          if (autoPlayLeftOrUp) this.rotateableMoveSliderLeft();
+          else this.rotateableMoveSliderRight();
         }
-      }, autoPlayTime)
+      }, autoPlayTime);
     }
-  }
+  };
 
   render() {
     //SSR check if window exists
-    if (typeof window === "undefined") return <></>
+    if (typeof window === "undefined") return <></>;
 
     //return number of children
-    return this.renderSlides()
+    return this.renderSlides();
   }
 }
