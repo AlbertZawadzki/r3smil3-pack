@@ -31,9 +31,11 @@ export default class Slider extends React.Component {
         left: { content: "Left", styles: {} },
         right: { content: "Right", styles: {} }
       },
-      autoPlay: true,
-      autoPlayLeftOrUp: false,
-      autoPlayTime: 1000,
+      autoPlay: {
+        on: true,
+        leftOrUp: false,
+        time: 5000
+      },
       children: [],
       draggable: true,
       fitToContainer: true,
@@ -42,8 +44,7 @@ export default class Slider extends React.Component {
       siteHeight,
       siteWidth,
       sliderPosition: { x: 0, y: 0 },
-      vertical: false,
-      visibleItems: 1
+      vertical: false
     };
   }
 
@@ -541,8 +542,6 @@ export default class Slider extends React.Component {
     const {
       arrows,
       autoPlay,
-      autoPlayLeftOrUp,
-      autoPlayTime,
       draggable,
       fitToContainer,
       recurrence,
@@ -553,9 +552,6 @@ export default class Slider extends React.Component {
 
     if (typeof arrows !== "undefined") this.setState({ arrows });
     if (typeof autoPlay !== "undefined") this.setState({ autoPlay });
-    if (typeof autoPlayLeftOrUp !== "undefined")
-      this.setState({ autoPlayLeftOrUp });
-    if (typeof autoPlayTime !== "undefined") this.setState({ autoPlayTime });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
@@ -683,15 +679,15 @@ export default class Slider extends React.Component {
   }
 
   autoStart = () => {
-    const { autoPlay, autoPlayLeftOrUp, autoPlayTime, rotateable } = this.state;
+    const { autoPlay, rotateable } = this.state;
 
-    if (autoPlay && rotateable) {
+    if (autoPlay.on && rotateable) {
       this.autoPlay = setInterval(() => {
         if (this.sliderNotFocused) {
-          if (autoPlayLeftOrUp) this.rotateableMoveSliderLeft();
+          if (autoPlay.leftOrUp) this.rotateableMoveSliderLeft();
           else this.rotateableMoveSliderRight();
         }
-      }, autoPlayTime);
+      }, autoPlay.time);
     }
   };
 

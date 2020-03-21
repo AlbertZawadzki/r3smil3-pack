@@ -24,11 +24,10 @@ My own ReactJS components, currently in the pack:<br/>
 <ol><li><a href="#slider">Slider</a></li></ol>
 
 <h1 id="slider">Slider</h1>
-
 <table>
 <tr>
   <td colspan='4'>
-    <h2 style="text-align:center">
+    <h2>
       All passable props
     </h2>
   </td>
@@ -53,28 +52,28 @@ My own ReactJS components, currently in the pack:<br/>
     </td>
     <td>
     <pre>Object: {
-    show: Boolean,
-    left: {
-      content: Object || String,
-      styles: Object
-    },
-    right: {
-      content: Object || String,
-      styles: Object
-    }
+  show: Boolean,
+  left: {
+    content: Object || String,
+    styles: Object
+  },
+  right: {
+    content: Object || String,
+    styles: Object
+  }
 }</pre>
     </td>
     <td>
-      <pre>Object: {
-    show: true,
-    left: {
-      content: "Left",
-      styles: {}
-    },
-    right: {
-      content: "Right",
-      styles: {}
-    }
+      <pre>{
+  show: true,
+  left: {
+    content: "Left",
+    styles: {}
+  },
+  right: {
+    content: "Right",
+    styles: {}
+  }
 }</pre>
     </td>
     <td>
@@ -86,39 +85,21 @@ My own ReactJS components, currently in the pack:<br/>
       autoPlay
     </td>
     <td>
-      Boolean
+      <pre>Object: {
+  on: Boolean,
+  leftOrUp: Boolean,
+  time: Integer
+}</pre>
     </td>
     <td>
-      <pre>true</pre>
+      <pre>{
+  on: true,
+  leftOrUp: false,
+  time: 5000
+}</pre>
     </td>
     <td>
-     SLider autoslide changing
-    </td>
-  </tr>
-  <tr>
-    <td>
-      autoPlayLeftOrUp
-    </td>
-    <td>
-    Boolean
-    </td>
-    <td><pre>false</pre>
-    </td>
-    <td>
-     Autosliding up (if slider is vertical) or left (if slider is horizontal)
-    </td>
-  </tr>
-  <tr>
-    <td>
-      autoPlayTime
-    </td>
-    <td>
-    Integer
-    </td>
-    <td><pre>1000</pre>
-    </td>
-    <td>
-     How often the slides will be autochanging
+     Sets slider autoplay, frequency of slides changing and autosliding up (if slider is vertical) or left (if slider is horizontal)
     </td>
   </tr>
    <tr>
@@ -160,7 +141,7 @@ My own ReactJS components, currently in the pack:<br/>
      Sets sliders width and height to 100% of sliders wrapper and hides everything outside of it
     </td>
   </tr>
-   <tr style="color:red;">
+   <tr>
     <td>
       recurrence
     </td>
