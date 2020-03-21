@@ -550,8 +550,8 @@ export default class Slider extends React.Component {
       vertical
     } = settings;
 
-    if (typeof arrows !== "undefined") this.setState({ arrows });
-    if (typeof autoPlay !== "undefined") this.setState({ autoPlay });
+    if (typeof arrows !== "undefined") this.setState({ ...arrows });
+    if (typeof autoPlay !== "undefined") this.setState({ ...autoPlay });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
