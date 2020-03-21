@@ -16,10 +16,13 @@ export default class Slider extends React.Component {
     this.allChildrenLength = 0;
     this.allowToDrag = false;
     this.attractableSlider = false;
-    this.autoPlay = false;
+    this.autoPlay = "";
     this.endingLines = [];
     this.firstSlide = 0;
+    this.positionMover = 0;
     this.previousMousePosition = { x: 0, y: 0 };
+    this.recurrence = 5;
+    this.singleChildrenSetLength = 0;
     this.sliderNotFocused = true;
     this.sliderWidth = 0;
     this.sliderPosition = 0;
@@ -32,18 +35,17 @@ export default class Slider extends React.Component {
         right: { content: "Right", styles: {} }
       },
       autoPlay: {
-        on: true,
+        on: false,
         leftOrUp: false,
         time: 5000
       },
+      center: false,
       children: [],
       draggable: true,
       fitToContainer: true,
-      recurrence: 5,
       rotateable: true,
       siteHeight,
       siteWidth,
-      sliderPosition: { x: 0, y: 0 },
       vertical: false
     };
   }
@@ -84,7 +86,7 @@ export default class Slider extends React.Component {
   attractSlider = () => {
     let slider = document.getElementById(this.sliderWrapperId);
     let slidesWrapper = slider.childNodes[0];
-    const { vertical, recurrence, rotateable } = this.state;
+    const { vertical, rotateable } = this.state;
 
     let items = slidesWrapper.childNodes;
     this.endingLines = [0];
@@ -141,8 +143,8 @@ export default class Slider extends React.Component {
       setTimeout(() => {
         if (minimum === 0) {
           let closestSlide;
-          if (this.firstSlide >= 3 * (items.length / recurrence)) {
-            this.firstSlide = items.length / recurrence;
+          if (this.firstSlide >= 3 * (items.length / this.recurrence)) {
+            this.firstSlide = items.length / this.recurrence;
             slidesWrapper.style.transition = "0s";
             closestSlide = this.endingLines[this.firstSlide];
             this.sliderPosition = closestSlide;
@@ -154,8 +156,8 @@ export default class Slider extends React.Component {
             setTimeout(() => {
               slidesWrapper.style.transition = "0.25s";
             }, 100);
-          } else if (this.firstSlide <= items.length / recurrence) {
-            this.firstSlide = 3 * (items.length / recurrence);
+          } else if (this.firstSlide <= items.length / this.recurrence) {
+            this.firstSlide = 3 * (items.length / this.recurrence);
             slidesWrapper.style.transition = "0s";
             closestSlide = this.endingLines[this.firstSlide];
             this.sliderPosition = closestSlide;
@@ -182,8 +184,8 @@ export default class Slider extends React.Component {
         } else if (this.attractableSlider) {
           this.firstSlide = minimum;
           let closestSlide;
-          if (this.firstSlide >= 3 * (items.length / recurrence)) {
-            this.firstSlide = items.length / recurrence;
+          if (this.firstSlide >= 3 * (items.length / this.recurrence)) {
+            this.firstSlide = items.length / this.recurrence;
             slidesWrapper.style.transition = "all 0s";
             closestSlide = this.endingLines[this.firstSlide];
             this.sliderPosition = closestSlide;
@@ -195,8 +197,8 @@ export default class Slider extends React.Component {
             setTimeout(() => {
               slidesWrapper.style.transition = "0.25s";
             }, 100);
-          } else if (this.firstSlide <= items.length / recurrence) {
-            this.firstSlide = 3 * (items.length / recurrence);
+          } else if (this.firstSlide <= items.length / this.recurrence) {
+            this.firstSlide = 3 * (items.length / this.recurrence);
             slidesWrapper.style.transition = "all 0s";
 
             closestSlide = this.endingLines[this.firstSlide];
@@ -266,15 +268,18 @@ export default class Slider extends React.Component {
           if (minimum > i) {
             minimum = i;
           }
-          slides[i].className = "slide-visible" + i;
+          slides[i].className = "slide-visible";
         } else if (slidePosition > 0 && slidePosition < this.sliderWidth)
-          slides[i].className = "slide-partial" + i;
-        else slides[i].className = "slide-invisible" + i;
+          slides[i].className = "slide-partial";
+        else slides[i].className = "slide-invisible";
       }
     }, 100);
 
   followMouse = () => {
     let { vertical } = this.state;
+
+    //Nothing should move
+    if (this.allChildrenLength < this.sliderWidth) return;
 
     let currentMousePosition = {
       x: window.event.clientX,
@@ -346,29 +351,31 @@ export default class Slider extends React.Component {
   };
 
   componentWillUnmount() {
-    window.removeEventListener("resize");
-    window.removeEventListener("mousemove");
-    window.removeEventListener("mousedown");
-    window.removeEventListener("mouseup");
-    window.removeEventListener("touchstart");
-    window.removeEventListener("touchend");
-    window.removeEventListener("touchmove");
+    const slider = document.getElementById(this.sliderWrapperId);
+
+    window.removeEventListener("resize", () => this.getSiteSize());
+    window.removeEventListener("resize", () => this.chooseSettings());
+    window.removeEventListener("mousemove", () => this.followMouse());
+    window.removeEventListener("mouseup", () => this.stopDragSlider());
+    window.removeEventListener("touchmove", () => this.followMouse());
+    window.removeEventListener("touchend", () => this.stopDragSlider());
+    slider.removeEventListener("mousedown", () => this.dragSlider());
+    slider.removeEventListener("touchstart", () => this.dragSlider());
     clearInterval(this.autoPlay);
   }
 
   setSliderStyles = () => {
     let {
-      children,
+      center,
       draggable,
       fitToContainer,
-      sliderPosition,
-      recurrence,
       rotateable,
       vertical
     } = this.state;
 
     let parentSize = 0;
-    let allChildrenLength = 0;
+    this.allChildrenLength = 0;
+    this.singleChildrenSetLength = 0;
 
     let slider = document.getElementById(this.sliderWrapperId);
 
@@ -390,29 +397,29 @@ export default class Slider extends React.Component {
 
       for (let i = 0; i < slides.length; i++) {
         //Get all items repe
-        if (rotateable) {
-          if (i < slides.length / recurrence) {
-            allChildrenLength += vertical
-              ? slides[i].offsetHeight
-              : slides[i].offsetWidth;
-          }
-        } else {
-          allChildrenLength += vertical
+        if (i < slides.length / this.recurrence) {
+          this.singleChildrenSetLength += vertical
             ? slides[i].offsetHeight
             : slides[i].offsetWidth;
         }
 
-        slides[i].style.display = "flex";
-        slides[i].style.justifyContent = "space-evenly";
-        slides[i].style.alignItems = "center";
-        slides[i].style.width = slidesWidth;
-        slides[i].style.height = "auto";
-        slides[i].style.margin = "auto";
-      }
-      const sliderSize =
-        (children.length * recurrence * parentSize) / visibleItems;
+        if (rotateable) {
+          if (i < slides.length / this.recurrence) {
+            this.allChildrenLength += vertical
+              ? slides[i].offsetHeight
+              : slides[i].offsetWidth;
+          }
+        } else {
+          this.allChildrenLength += vertical
+            ? slides[i].offsetHeight
+            : slides[i].offsetWidth;
+        }
 
-      this.allChildrenLength = allChildrenLength;
+        slides[i].style.width = "auto";
+        slides[i].style.height = "auto";
+        slides[i].style.margin = center ? "auto" : "initial";
+      }
+
       this.sliderWidth = vertical ? slider.offsetHeight : slider.offsetWidth;
 
       if (slider && draggable) {
@@ -420,30 +427,33 @@ export default class Slider extends React.Component {
         slider.addEventListener("touchstart", () => this.dragSlider());
       }
 
-      if (!rotateable) {
-        recurrence = 1;
-      }
+      this.positionMover = (this.recurrence - 1) / 2;
+      this.sliderPosition = this.positionMover * this.allChildrenLength;
 
       //Styling slides wrapper
-      slidesWrapper.style.width = !vertical ? sliderSize : "100%";
-      slidesWrapper.style.height = vertical ? sliderSize : "100%";
+      slidesWrapper.style.width = "100%";
+      slidesWrapper.style.height = "100%";
       slidesWrapper.style.display = "flex";
       slidesWrapper.style.flexDirection = vertical ? "column" : "row";
+      slidesWrapper.style.justifyContent = false
+        ? "space-evenly"
+        : "flex-start";
       slidesWrapper.style.transition = "transform 0.25s ease-in-out";
-      if (recurrence > 1) {
-        this.sliderPosition = 2 * allChildrenLength;
-        slidesWrapper.style.transform = vertical
-          ? "translateY(-" + 2 * allChildrenLength + "px)"
-          : "translateX(-" + 2 * allChildrenLength + "px)";
-      } else {
-        slidesWrapper.style.transform = vertical
-          ? "translateY(" + sliderPosition.y + "px)"
-          : "translateX(" + sliderPosition.x + "px)";
-      }
+      slidesWrapper.style.transform = vertical
+        ? "translateY(0px)"
+        : "translateX(0px)";
 
       //Styling slider
-      slider.style.width = fitToContainer ? "100%" : "auto";
-      slider.style.height = fitToContainer ? "100%" : "auto";
+      slider.style.width = fitToContainer
+        ? !vertical
+          ? "100%"
+          : `${parentSize}px`
+        : "auto";
+      slider.style.height = fitToContainer
+        ? vertical
+          ? `${parentSize}px`
+          : "100%"
+        : "auto";
       slider.style.overflow = fitToContainer ? "hidden" : "visible";
     }
   };
@@ -538,10 +548,21 @@ export default class Slider extends React.Component {
     }, 260);
   };
 
+  setMinimumRecurrence = recurrence => {
+    const { rotateable } = this.state;
+
+    if (!rotateable) this.recurrence = 1;
+    else if (recurrence > this.recurrence) this.recurrence = recurrence;
+    else this.recurrence = 5;
+
+    return this.recurrence;
+  };
+
   setSettings = settings => {
     const {
       arrows,
       autoPlay,
+      center,
       draggable,
       fitToContainer,
       recurrence,
@@ -550,15 +571,16 @@ export default class Slider extends React.Component {
       vertical
     } = settings;
 
-    if (typeof arrows !== "undefined") this.setState({ ...arrows });
-    if (typeof autoPlay !== "undefined") this.setState({ ...autoPlay });
+    if (typeof arrows !== "undefined")
+      this.setState({ arrows: { ...this.state.arrows, ...arrows } });
+    if (typeof autoPlay !== "undefined")
+      this.setState({ autoPlay: { ...this.state.autoPlay, ...autoPlay } });
+    if (typeof center !== "undefined") this.setState({ center });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
-    if (typeof recurrence !== "undefined" && recurrence > 3)
-      this.setState({
-        recurrence
-      });
+    if (typeof recurrence !== "undefined")
+      this.setMinimumRecurrence(recurrence);
     if (typeof rotateable !== "undefined") this.setState({ rotateable });
     if (typeof startNumber !== "undefined") this.setState({ startNumber });
     if (typeof vertical !== "undefined") this.setState({ vertical });
@@ -596,8 +618,39 @@ export default class Slider extends React.Component {
     this.sliderNotFocused = !status;
   };
 
+  sliderSetup = () => {
+    const { children, rotateable } = this.props;
+    this.setState({ children, allChildren: children });
+    this.firstSlide = rotateable ? 2 * children.length : 0;
+    this.chooseSettings();
+    this.handledEvents();
+
+    setTimeout(() => {
+      this.setSlidesClassNames();
+      this.autoStart();
+    }, 100);
+  };
+
+  componentDidMount() {
+    this.sliderSetup();
+  }
+
+  autoStart = () => {
+    const { autoPlay, rotateable } = this.state;
+
+    if (autoPlay.on && rotateable) {
+      this.autoPlay = setInterval(() => {
+        if (this.sliderNotFocused) {
+          if (autoPlay.leftOrUp) this.rotateableMoveSliderLeft();
+          else this.rotateableMoveSliderRight();
+        }
+      }, autoPlay.time);
+    }
+  };
+
   renderSlides = () => {
-    let { children, recurrence, rotateable, arrows } = this.state;
+    let { children, rotateable, arrows } = this.state;
+
     let rotationLeft = () =>
       rotateable
         ? this.rotateableMoveSliderLeft()
@@ -607,9 +660,10 @@ export default class Slider extends React.Component {
         ? this.rotateableMoveSliderRight()
         : this.nonRotateableMoveSliderRight();
 
-    if (!rotateable) recurrence = 1;
+    this.recurrence = this.setMinimumRecurrence();
+
     let table = [];
-    for (let i = 0; i < recurrence; i++) {
+    for (let i = 0; i < this.recurrence; i++) {
       table.push(i);
     }
 
@@ -661,41 +715,10 @@ export default class Slider extends React.Component {
       );
   };
 
-  sliderSetup = () => {
-    const { children, rotateable } = this.props;
-    this.setState({ children, allChildren: children });
-    this.firstSlide = rotateable ? 2 * children.length : 0;
-    this.chooseSettings();
-    this.handledEvents();
-
-    setTimeout(() => {
-      this.setSlidesClassNames();
-      this.autoStart();
-    }, 100);
-  };
-
-  componentDidMount() {
-    this.sliderSetup();
-  }
-
-  autoStart = () => {
-    const { autoPlay, rotateable } = this.state;
-
-    if (autoPlay.on && rotateable) {
-      this.autoPlay = setInterval(() => {
-        if (this.sliderNotFocused) {
-          if (autoPlay.leftOrUp) this.rotateableMoveSliderLeft();
-          else this.rotateableMoveSliderRight();
-        }
-      }, autoPlay.time);
-    }
-  };
-
   render() {
     //SSR check if window exists
-    if (typeof window === "undefined") return <></>;
+    if (typeof window === "undefined") return <>Window error</>;
 
-    //return number of children
     return this.renderSlides();
   }
 }

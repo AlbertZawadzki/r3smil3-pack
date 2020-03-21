@@ -99,7 +99,6 @@ function (_React$Component) {
       var slidesWrapper = slider.childNodes[0];
       var _this$state = _this.state,
           vertical = _this$state.vertical,
-          recurrence = _this$state.recurrence,
           rotateable = _this$state.rotateable;
       var items = slidesWrapper.childNodes;
       _this.endingLines = [0];
@@ -160,8 +159,8 @@ function (_React$Component) {
           if (minimum === 0) {
             var closestSlide;
 
-            if (_this.firstSlide >= 3 * (items.length / recurrence)) {
-              _this.firstSlide = items.length / recurrence;
+            if (_this.firstSlide >= 3 * (items.length / _this.recurrence)) {
+              _this.firstSlide = items.length / _this.recurrence;
               slidesWrapper.style.transition = "0s";
               closestSlide = _this.endingLines[_this.firstSlide];
               _this.sliderPosition = closestSlide;
@@ -169,8 +168,8 @@ function (_React$Component) {
               setTimeout(function () {
                 slidesWrapper.style.transition = "0.25s";
               }, 100);
-            } else if (_this.firstSlide <= items.length / recurrence) {
-              _this.firstSlide = 3 * (items.length / recurrence);
+            } else if (_this.firstSlide <= items.length / _this.recurrence) {
+              _this.firstSlide = 3 * (items.length / _this.recurrence);
               slidesWrapper.style.transition = "0s";
               closestSlide = _this.endingLines[_this.firstSlide];
               _this.sliderPosition = closestSlide;
@@ -191,8 +190,8 @@ function (_React$Component) {
 
             var _closestSlide;
 
-            if (_this.firstSlide >= 3 * (items.length / recurrence)) {
-              _this.firstSlide = items.length / recurrence;
+            if (_this.firstSlide >= 3 * (items.length / _this.recurrence)) {
+              _this.firstSlide = items.length / _this.recurrence;
               slidesWrapper.style.transition = "all 0s";
               _closestSlide = _this.endingLines[_this.firstSlide];
               _this.sliderPosition = _closestSlide;
@@ -200,8 +199,8 @@ function (_React$Component) {
               setTimeout(function () {
                 slidesWrapper.style.transition = "0.25s";
               }, 100);
-            } else if (_this.firstSlide <= items.length / recurrence) {
-              _this.firstSlide = 3 * (items.length / recurrence);
+            } else if (_this.firstSlide <= items.length / _this.recurrence) {
+              _this.firstSlide = 3 * (items.length / _this.recurrence);
               slidesWrapper.style.transition = "all 0s";
               _closestSlide = _this.endingLines[_this.firstSlide];
               _this.sliderPosition = _closestSlide;
@@ -259,14 +258,16 @@ function (_React$Component) {
               minimum = i;
             }
 
-            slides[i].className = "slide-visible" + i;
-          } else if (slidePosition > 0 && slidePosition < _this.sliderWidth) slides[i].className = "slide-partial" + i;else slides[i].className = "slide-invisible" + i;
+            slides[i].className = "slide-visible";
+          } else if (slidePosition > 0 && slidePosition < _this.sliderWidth) slides[i].className = "slide-partial";else slides[i].className = "slide-invisible";
         }
       }, 100);
     };
 
     _this.followMouse = function () {
-      var vertical = _this.state.vertical;
+      var vertical = _this.state.vertical; //Nothing should move
+
+      if (_this.allChildrenLength < _this.sliderWidth) return;
       var currentMousePosition = {
         x: window.event.clientX,
         y: window.event.clientY
@@ -326,15 +327,14 @@ function (_React$Component) {
 
     _this.setSliderStyles = function () {
       var _this$state2 = _this.state,
-          children = _this$state2.children,
+          center = _this$state2.center,
           draggable = _this$state2.draggable,
           fitToContainer = _this$state2.fitToContainer,
-          sliderPosition = _this$state2.sliderPosition,
-          recurrence = _this$state2.recurrence,
           rotateable = _this$state2.rotateable,
           vertical = _this$state2.vertical;
       var parentSize = 0;
-      var allChildrenLength = 0;
+      _this.allChildrenLength = 0;
+      _this.singleChildrenSetLength = 0;
       var slider = document.getElementById(_this.sliderWrapperId); //get max size of slider
 
       if (slider !== null) {
@@ -354,24 +354,23 @@ function (_React$Component) {
 
         for (var i = 0; i < slides.length; i++) {
           //Get all items repe
-          if (rotateable) {
-            if (i < slides.length / recurrence) {
-              allChildrenLength += vertical ? slides[i].offsetHeight : slides[i].offsetWidth;
-            }
-          } else {
-            allChildrenLength += vertical ? slides[i].offsetHeight : slides[i].offsetWidth;
+          if (i < slides.length / _this.recurrence) {
+            _this.singleChildrenSetLength += vertical ? slides[i].offsetHeight : slides[i].offsetWidth;
           }
 
-          slides[i].style.display = "flex";
-          slides[i].style.justifyContent = "space-evenly";
-          slides[i].style.alignItems = "center";
-          slides[i].style.width = slidesWidth;
+          if (rotateable) {
+            if (i < slides.length / _this.recurrence) {
+              _this.allChildrenLength += vertical ? slides[i].offsetHeight : slides[i].offsetWidth;
+            }
+          } else {
+            _this.allChildrenLength += vertical ? slides[i].offsetHeight : slides[i].offsetWidth;
+          }
+
+          slides[i].style.width = "auto";
           slides[i].style.height = "auto";
-          slides[i].style.margin = "auto";
+          slides[i].style.margin = center ? "auto" : "initial";
         }
 
-        var sliderSize = children.length * recurrence * parentSize / visibleItems;
-        _this.allChildrenLength = allChildrenLength;
         _this.sliderWidth = vertical ? slider.offsetHeight : slider.offsetWidth;
 
         if (slider && draggable) {
@@ -383,27 +382,19 @@ function (_React$Component) {
           });
         }
 
-        if (!rotateable) {
-          recurrence = 1;
-        } //Styling slides wrapper
+        _this.positionMover = (_this.recurrence - 1) / 2;
+        _this.sliderPosition = _this.positionMover * _this.allChildrenLength; //Styling slides wrapper
 
-
-        slidesWrapper.style.width = !vertical ? sliderSize : "100%";
-        slidesWrapper.style.height = vertical ? sliderSize : "100%";
+        slidesWrapper.style.width = "100%";
+        slidesWrapper.style.height = "100%";
         slidesWrapper.style.display = "flex";
         slidesWrapper.style.flexDirection = vertical ? "column" : "row";
+        slidesWrapper.style.justifyContent = false ? "space-evenly" : "flex-start";
         slidesWrapper.style.transition = "transform 0.25s ease-in-out";
+        slidesWrapper.style.transform = vertical ? "translateY(0px)" : "translateX(0px)"; //Styling slider
 
-        if (recurrence > 1) {
-          _this.sliderPosition = 2 * allChildrenLength;
-          slidesWrapper.style.transform = vertical ? "translateY(-" + 2 * allChildrenLength + "px)" : "translateX(-" + 2 * allChildrenLength + "px)";
-        } else {
-          slidesWrapper.style.transform = vertical ? "translateY(" + sliderPosition.y + "px)" : "translateX(" + sliderPosition.x + "px)";
-        } //Styling slider
-
-
-        slider.style.width = fitToContainer ? "100%" : "auto";
-        slider.style.height = fitToContainer ? "100%" : "auto";
+        slider.style.width = fitToContainer ? !vertical ? "100%" : "".concat(parentSize, "px") : "auto";
+        slider.style.height = fitToContainer ? vertical ? "".concat(parentSize, "px") : "100%" : "auto";
         slider.style.overflow = fitToContainer ? "hidden" : "visible";
       }
     };
@@ -484,26 +475,38 @@ function (_React$Component) {
       }, 260);
     };
 
+    _this.setMinimumRecurrence = function (recurrence) {
+      var rotateable = _this.state.rotateable;
+      if (!rotateable) _this.recurrence = 1;else if (recurrence > _this.recurrence) _this.recurrence = recurrence;else _this.recurrence = 5;
+      return _this.recurrence;
+    };
+
     _this.setSettings = function (settings) {
       var arrows = settings.arrows,
           autoPlay = settings.autoPlay,
+          center = settings.center,
           draggable = settings.draggable,
           fitToContainer = settings.fitToContainer,
           recurrence = settings.recurrence,
           rotateable = settings.rotateable,
           startNumber = settings.startNumber,
           vertical = settings.vertical;
-      if (typeof arrows !== "undefined") _this.setState(_objectSpread({}, arrows));
-      if (typeof autoPlay !== "undefined") _this.setState(_objectSpread({}, autoPlay));
+      if (typeof arrows !== "undefined") _this.setState({
+        arrows: _objectSpread({}, _this.state.arrows, arrows)
+      });
+      if (typeof autoPlay !== "undefined") _this.setState({
+        autoPlay: _objectSpread({}, _this.state.autoPlay, autoPlay)
+      });
+      if (typeof center !== "undefined") _this.setState({
+        center: center
+      });
       if (typeof draggable !== "undefined") _this.setState({
         draggable: draggable
       });
       if (typeof fitToContainer !== "undefined") _this.setState({
         fitToContainer: fitToContainer
       });
-      if (typeof recurrence !== "undefined" && recurrence > 3) _this.setState({
-        recurrence: recurrence
-      });
+      if (typeof recurrence !== "undefined") _this.setMinimumRecurrence(recurrence);
       if (typeof rotateable !== "undefined") _this.setState({
         rotateable: rotateable
       });
@@ -549,12 +552,48 @@ function (_React$Component) {
       _this.sliderNotFocused = !status;
     };
 
-    _this.renderSlides = function () {
+    _this.sliderSetup = function () {
+      var _this$props = _this.props,
+          children = _this$props.children,
+          rotateable = _this$props.rotateable;
+
+      _this.setState({
+        children: children,
+        allChildren: children
+      });
+
+      _this.firstSlide = rotateable ? 2 * children.length : 0;
+
+      _this.chooseSettings();
+
+      _this.handledEvents();
+
+      setTimeout(function () {
+        _this.setSlidesClassNames();
+
+        _this.autoStart();
+      }, 100);
+    };
+
+    _this.autoStart = function () {
       var _this$state4 = _this.state,
-          children = _this$state4.children,
-          recurrence = _this$state4.recurrence,
-          rotateable = _this$state4.rotateable,
-          arrows = _this$state4.arrows;
+          autoPlay = _this$state4.autoPlay,
+          rotateable = _this$state4.rotateable;
+
+      if (autoPlay.on && rotateable) {
+        _this.autoPlay = setInterval(function () {
+          if (_this.sliderNotFocused) {
+            if (autoPlay.leftOrUp) _this.rotateableMoveSliderLeft();else _this.rotateableMoveSliderRight();
+          }
+        }, autoPlay.time);
+      }
+    };
+
+    _this.renderSlides = function () {
+      var _this$state5 = _this.state,
+          children = _this$state5.children,
+          rotateable = _this$state5.rotateable,
+          arrows = _this$state5.arrows;
 
       var rotationLeft = function rotationLeft() {
         return rotateable ? _this.rotateableMoveSliderLeft() : _this.nonRotateableMoveSliderLeft();
@@ -564,10 +603,10 @@ function (_React$Component) {
         return rotateable ? _this.rotateableMoveSliderRight() : _this.nonRotateableMoveSliderRight();
       };
 
-      if (!rotateable) recurrence = 1;
+      _this.recurrence = _this.setMinimumRecurrence();
       var table = [];
 
-      for (var i = 0; i < recurrence; i++) {
+      for (var i = 0; i < _this.recurrence; i++) {
         table.push(i);
       }
 
@@ -626,43 +665,6 @@ function (_React$Component) {
       })));
     };
 
-    _this.sliderSetup = function () {
-      var _this$props = _this.props,
-          children = _this$props.children,
-          rotateable = _this$props.rotateable;
-
-      _this.setState({
-        children: children,
-        allChildren: children
-      });
-
-      _this.firstSlide = rotateable ? 2 * children.length : 0;
-
-      _this.chooseSettings();
-
-      _this.handledEvents();
-
-      setTimeout(function () {
-        _this.setSlidesClassNames();
-
-        _this.autoStart();
-      }, 100);
-    };
-
-    _this.autoStart = function () {
-      var _this$state5 = _this.state,
-          autoPlay = _this$state5.autoPlay,
-          rotateable = _this$state5.rotateable;
-
-      if (autoPlay.on && rotateable) {
-        _this.autoPlay = setInterval(function () {
-          if (_this.sliderNotFocused) {
-            if (autoPlay.leftOrUp) _this.rotateableMoveSliderLeft();else _this.rotateableMoveSliderRight();
-          }
-        }, autoPlay.time);
-      }
-    };
-
     _this.sliderWrapperId = (0, _uuid.v4)();
     _this.sliderInnerWrapperId = (0, _uuid.v4)();
     var _siteWidth = 0;
@@ -672,13 +674,16 @@ function (_React$Component) {
     _this.allChildrenLength = 0;
     _this.allowToDrag = false;
     _this.attractableSlider = false;
-    _this.autoPlay = false;
+    _this.autoPlay = "";
     _this.endingLines = [];
     _this.firstSlide = 0;
+    _this.positionMover = 0;
     _this.previousMousePosition = {
       x: 0,
       y: 0
     };
+    _this.recurrence = 5;
+    _this.singleChildrenSetLength = 0;
     _this.sliderNotFocused = true;
     _this.sliderWidth = 0;
     _this.sliderPosition = 0;
@@ -696,21 +701,17 @@ function (_React$Component) {
         }
       },
       autoPlay: {
-        on: true,
+        on: false,
         leftOrUp: false,
         time: 5000
       },
+      center: false,
       children: [],
       draggable: true,
       fitToContainer: true,
-      recurrence: 5,
       rotateable: true,
       siteHeight: _siteHeight,
       siteWidth: _siteWidth,
-      sliderPosition: {
-        x: 0,
-        y: 0
-      },
       vertical: false
     };
     return _this;
@@ -719,13 +720,33 @@ function (_React$Component) {
   _createClass(Slider, [{
     key: "componentWillUnmount",
     value: function componentWillUnmount() {
-      window.removeEventListener("resize");
-      window.removeEventListener("mousemove");
-      window.removeEventListener("mousedown");
-      window.removeEventListener("mouseup");
-      window.removeEventListener("touchstart");
-      window.removeEventListener("touchend");
-      window.removeEventListener("touchmove");
+      var _this2 = this;
+
+      var slider = document.getElementById(this.sliderWrapperId);
+      window.removeEventListener("resize", function () {
+        return _this2.getSiteSize();
+      });
+      window.removeEventListener("resize", function () {
+        return _this2.chooseSettings();
+      });
+      window.removeEventListener("mousemove", function () {
+        return _this2.followMouse();
+      });
+      window.removeEventListener("mouseup", function () {
+        return _this2.stopDragSlider();
+      });
+      window.removeEventListener("touchmove", function () {
+        return _this2.followMouse();
+      });
+      window.removeEventListener("touchend", function () {
+        return _this2.stopDragSlider();
+      });
+      slider.removeEventListener("mousedown", function () {
+        return _this2.dragSlider();
+      });
+      slider.removeEventListener("touchstart", function () {
+        return _this2.dragSlider();
+      });
       clearInterval(this.autoPlay);
     }
   }, {
@@ -737,8 +758,7 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       //SSR check if window exists
-      if (typeof window === "undefined") return _react.default.createElement(_react.default.Fragment, null); //return number of children
-
+      if (typeof window === "undefined") return _react.default.createElement(_react.default.Fragment, null, "Window error");
       return this.renderSlides();
     }
   }]);

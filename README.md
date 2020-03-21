@@ -93,13 +93,26 @@ My own ReactJS components, currently in the pack:<br/>
     </td>
     <td>
       <pre>{
-  on: true,
+  on: false,
   leftOrUp: false,
   time: 5000
 }</pre>
     </td>
     <td>
      Sets slider autoplay, frequency of slides changing and autosliding up (if slider is vertical) or left (if slider is horizontal)
+    </td>
+  </tr>
+   <tr>
+    <td>
+      center
+    </td>
+    <td>
+     Boolean
+    </td>
+    <td><pre>false</pre>
+    </td>
+    <td>
+     Centers all items vertically and horizontally
     </td>
   </tr>
    <tr>
@@ -146,13 +159,12 @@ My own ReactJS components, currently in the pack:<br/>
       recurrence
     </td>
     <td>
-     Integer
+     Integer > 5
     </td>
-    <td><pre>5</pre>
+    <td><pre>rotateable ? recurrence > this.recurrence ? recurrence : 5 : 1</pre>
     </td>
     <td>
-     Not avaible yet.
-     Sets how many times all slider items should repeat.
+     If slider is rotateable and new recurrence is greater than 5 sets it up
     </td>
   </tr>
   <tr>
