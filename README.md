@@ -106,10 +106,15 @@ My own ReactJS components, currently in the pack:<br/>
     <td>
       center
     </td>
-    <td>
-     Boolean
+    <td><pre>Object: {
+  horizontally: Boolean,
+  vertically: Boolean,
+}</pre>
     </td>
-    <td><pre>false</pre>
+    <td><pre>Object: {
+  horizontally: false,
+  vertically: true,
+}</pre>
     </td>
     <td>
      Centers all items vertically and horizontally
@@ -138,7 +143,7 @@ My own ReactJS components, currently in the pack:<br/>
     <td><pre>true</pre>
     </td>
     <td>
-     Sets if slider should react on touching and dragging
+     Sets if slider should react on pointer
     </td>
   </tr>
    <tr>
@@ -159,12 +164,63 @@ My own ReactJS components, currently in the pack:<br/>
       recurrence
     </td>
     <td>
-     Integer > 5
-    </td>
-    <td><pre>rotateable ? recurrence > this.recurrence ? recurrence : 5 : 1</pre>
+     Integer
+    <td><pre>Read description -></pre>
     </td>
     <td>
-     If slider is rotateable and new recurrence is greater than 5 sets it up
+      If slides to parent ratio is:<br/>
+      <ul>
+        <li>
+          Lesser than 1
+          <ul>
+            <li>
+              set recurrence to 1
+            </li>
+          </ul>
+        </li>
+        <li>
+          Lesser than 2
+          <ul>
+            <li>
+              If recurrence is greater than 5
+              <ul>
+                <li>
+                  set recurrence to recurrence
+                </li>
+              </ul>
+            </li>
+            <li>
+              Else
+              <ul>
+                <li>
+                  set recurrence to 5
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Greater than 2
+         <ul>
+            <li>
+              If recurrence is greater than 3
+              <ul>
+                <li>
+                  set recurrence to recurrence
+                </li>
+              </ul>
+            </li>
+            <li>
+              Else
+              <ul>
+                <li>
+                  set recurrence to 3
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
     </td>
   </tr>
   <tr>
