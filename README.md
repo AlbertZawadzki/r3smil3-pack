@@ -99,7 +99,7 @@ My own ReactJS components, currently in the pack:<br/>
 }</pre>
     </td>
     <td>
-     Sets slider autoplay, frequency of slides changing and autosliding up (if slider is vertical) or left (if slider is horizontal)
+     Sets slider autoplay, frequency of slides changing and direction
     </td>
   </tr>
    <tr>
