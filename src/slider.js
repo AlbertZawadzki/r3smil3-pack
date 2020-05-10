@@ -45,6 +45,7 @@ export default class Slider extends React.Component {
         horizontally: false,
         vertically: true,
       },
+      changeTime: 0.25,
       children: [],
       draggable: true,
       fitToContainer: true,
@@ -68,6 +69,7 @@ export default class Slider extends React.Component {
       arrows,
       autoPlay,
       center,
+      changeTime,
       draggable,
       fitToContainer,
       rotatable,
@@ -81,6 +83,7 @@ export default class Slider extends React.Component {
       this.setState({ autoPlay: { ...this.state.autoPlay, ...autoPlay } });
     if (typeof center !== "undefined")
       this.setState({ center: { ...this.state.center, ...center } });
+    if (typeof changeTime !== "undefined") this.setState({ changeTime });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
@@ -272,7 +275,7 @@ export default class Slider extends React.Component {
   /* COMPONENT UPDATE */
 
   setSliderStyles = () => {
-    const { center, fitToContainer, vertical } = this.state;
+    const { center, changeTime, fitToContainer, vertical } = this.state;
 
     //Styling slider wrapper
     this.slider.style.width = fitToContainer ? "100%" : "auto";
@@ -290,7 +293,7 @@ export default class Slider extends React.Component {
     this.slidesWrapper.style.transform = vertical
       ? `translateY(${this.sliderPosition}px)`
       : `translateX(${this.sliderPosition}px)`;
-    this.slidesWrapper.style.transition = "transform 0.25s ease-in-out";
+    this.slidesWrapper.style.transition = `transform ${changeTime}s ease-in-out`;
 
     //Styling slides
     for (let i = 0; i < this.slides.childNodes.length; i++) {
@@ -403,14 +406,14 @@ export default class Slider extends React.Component {
      * If slider is not recurrencial
      * block it on max position, setClosestSlide blocks at 0
      */
-    const { children, rotatable, vertical } = this.state;
+    const { changeTime, children, rotatable, vertical } = this.state;
 
     if (this.recurrence === 1 || !rotatable) {
       if (this.sliderRealPosition > this.oneSlidesSetLength - this.sliderSize) {
         this.sliderPosition = this.sliderSize - this.oneSlidesSetLength;
         this.sliderRealPosition =
           this.oneSlidesSetLength - this.slider.offsetWidth;
-        this.slidesWrapper.style.transition = "transform 0.25s";
+        this.slidesWrapper.style.transition = `transform ${changeTime}s`;
         this.slidesWrapper.style.transform = vertical
           ? `translateY(${this.sliderPosition}px)`
           : `translateX(${this.sliderPosition}px)`;
@@ -435,7 +438,7 @@ export default class Slider extends React.Component {
           this.slidesWrapper.style.transform = vertical
             ? `translateY(${this.sliderPosition}px)`
             : `translateX(${this.sliderPosition}px)`;
-        }, 50);
+        }, 200 * changeTime);
       }
     }
     this.setSlidesClassNames();
@@ -443,7 +446,7 @@ export default class Slider extends React.Component {
 
   setClosestSlide = () => {
     if (!this.attractableSlider) return;
-    const { vertical } = this.state;
+    const { changeTime, vertical } = this.state;
 
     let closestSlide;
     let minimum = Infinity;
@@ -473,7 +476,7 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = "transform 0.25s";
+    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
     this.slidesWrapper.style.transform = vertical
       ? `translateY(${this.sliderPosition}px)`
       : `translateX(${this.sliderPosition}px)`;
@@ -483,7 +486,7 @@ export default class Slider extends React.Component {
 
   moveSlider = (currentPointerPosition) => {
     if (typeof window === "undefined") return;
-    const { vertical } = this.state;
+    const { changeTime, vertical } = this.state;
 
     let movement = currentPointerPosition - this.previousPointerPosition;
 
@@ -503,7 +506,7 @@ export default class Slider extends React.Component {
 
     //Needed for attractibily to set
     setTimeout(() => {
-      this.slidesWrapper.style.transition = "transform 0.25s";
+      this.slidesWrapper.style.transition = `transform ${changeTime}s`;
     }, 10);
 
     const findClosestSlide = setInterval(() => {
@@ -515,7 +518,7 @@ export default class Slider extends React.Component {
   };
 
   moveSliderLeft = () => {
-    const { vertical } = this.state;
+    const { changeTime, vertical } = this.state;
     this.attractableSlider = true;
 
     this.sliderRealPosition =
@@ -526,7 +529,7 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = "transform 0.25s";
+    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
     this.slidesWrapper.style.transform = vertical
       ? `translateY(${this.sliderPosition}px)`
       : `translateX(${this.sliderPosition}px)`;
@@ -536,7 +539,7 @@ export default class Slider extends React.Component {
   };
 
   moveSliderRight = () => {
-    const { vertical } = this.state;
+    const { changeTime, vertical } = this.state;
     this.attractableSlider = true;
 
     this.sliderRealPosition =
@@ -547,7 +550,7 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = "transform 0.25s";
+    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
     this.slidesWrapper.style.transform = vertical
       ? `translateY(${this.sliderPosition}px)`
       : `translateX(${this.sliderPosition}px)`;

@@ -119,6 +119,17 @@ My own ReactJS components, currently in the pack:<br/>
     <td>
      Centers all items vertically and horizontally
     </td>
+  </tr> <tr>
+    <td>
+      changeTime
+    </td>
+    <td>Integer
+    </td>
+    <td><pre>0.25</pre>
+    </td>
+    <td>
+     Time of sliding slides
+    </td>
   </tr>
    <tr>
     <td>
