@@ -19,14 +19,14 @@ export default class Slider extends React.Component {
     this.siteWidth = 0; //Site width
     this.slider = "Slider wrapper"; //Slider
     this.sliderNotFocused = true; //Defines if mouse is over the slider
-    this.sliderId = v4(); //Unique slider id
+    this.sliderId; //Unique slider id
     this.sliderPosition = 0; //Defines how much has the slider moved
     this.sliderRealPosition = 0; //Defines how much has the slider moved relativily
     this.sliderSize = 0; //Defines the width  or height of slider
     this.slides = "Slides"; //Slides
     this.slidesBreaks = []; //All slides endings
     this.slidesWrapper = "Slides wrapper"; //Slides wrapper
-    this.slidesWrapperId = v4(); //Unique slides wrapper id
+    this.slidesWrapperId; //Unique slides wrapper id
     this.slidesWrapperSize = 0; //Slides wrapper size
 
     this.state = {
@@ -315,47 +315,66 @@ export default class Slider extends React.Component {
     }
   };
 
-  setSlidesClassNames = () => {
-    const { vertical } = this.state;
-    let firstSlidePartiallyVisible = false;
+  setSlidesClassNames = () =>
+    setTimeout(() => {
+      const { fitToContainer, vertical } = this.state;
+      let firstSlidePartiallyVisible = false;
 
-    for (let i = 0; i < this.slides.childNodes.length; i++) {
-      //All slides have slide class name
-      this.slides.childNodes[i].className = "slide ";
+      for (let i = 0; i < this.slides.childNodes.length; i++) {
+        //All slides have slide class name
+        this.slides.childNodes[i].className = "slide ";
 
-      let slidePosition = vertical
-        ? this.slides.childNodes[i].getBoundingClientRect().top
-        : this.slides.childNodes[i].getBoundingClientRect().left;
-      let dimension = vertical
-        ? this.slides.childNodes[i].offsetHeight
-        : this.slides.childNodes[i].offsetWidth;
+        let slidePosition = vertical
+          ? this.slides.childNodes[i].getBoundingClientRect().top
+          : this.slides.childNodes[i].getBoundingClientRect().left;
+        let dimension = vertical
+          ? this.slides.childNodes[i].offsetHeight
+          : this.slides.childNodes[i].offsetWidth;
 
-      //Slide is fully visible on site
-      if (slidePosition >= 0 && slidePosition + dimension <= this.sliderSize) {
-        this.slides.childNodes[i].className += "visible ";
-      }
-      //You can see only  end of a slide
-      else if (
-        slidePosition >= 0 &&
-        slidePosition + dimension > this.sliderSize
-      ) {
-        this.slides.childNodes[i].className += "partial ";
-      }
-      //First slide is partially visible - block first className
-      else if (slidePosition < 0 && slidePosition + dimension > 0) {
-        this.slides.childNodes[i].className += "partial first ";
-        firstSlidePartiallyVisible = true;
-      }
-      //Inivisble
-      else {
-        this.slides.childNodes[i].className += "invisible ";
-      }
-    }
+        let sliderPosition;
+        let sliderSize;
 
-    //Highlight first slide
-    if (!firstSlidePartiallyVisible)
-      this.slides.childNodes[this.firstSlide].className += "first ";
-  };
+        //Some bug
+        if (document.getElementById(this.sliderId) !== null) {
+          sliderPosition = vertical
+            ? document.getElementById(this.sliderId).getBoundingClientRect().top
+            : document.getElementById(this.sliderId).getBoundingClientRect()
+                .left;
+
+          //If fitToContainer is false, slider is on 100vh || 100vw
+          if (fitToContainer) {
+            sliderSize = vertical
+              ? document.getElementById(this.sliderId).offsetHeight
+              : document.getElementById(this.sliderId).offsetWidth;
+          } else {
+            sliderSize = vertical ? window.innerHeight : window.innerWidth;
+          }
+        }
+
+        let firstSettled = false;
+
+        if (sliderPosition > slidePosition + dimension) {
+          this.slides.childNodes[i].className += "invisible ";
+        } else if (
+          sliderPosition > slidePosition &&
+          sliderPosition <= slidePosition + dimension
+        ) {
+          this.slides.childNodes[i].className += "partial-first ";
+        } else if (sliderPosition === slidePosition) {
+          this.slides.childNodes[i].className += firstSettled
+            ? "visible "
+            : "first ";
+          firstSettled = true;
+        } else if (slidePosition < sliderSize) {
+          this.slides.childNodes[i].className += "partial ";
+        } else if (slidePosition > sliderSize) {
+          this.slides.childNodes[i].className += "invisible ";
+        } else {
+          this.slides.childNodes[i].className += "unknown ";
+          console.error("r3smil3-pack", "unknown slide position");
+        }
+      }
+    }, 1250 * this.state.changeTime);
 
   updateTasks = () => {
     const { vertical } = this.state;
@@ -372,6 +391,8 @@ export default class Slider extends React.Component {
   /* COMPONENT LIFE */
 
   componentWillMount() {
+    this.sliderId = v4();
+    this.slidesWrapperId = v4();
     this.beforeMountTasks();
   }
 
@@ -443,6 +464,10 @@ export default class Slider extends React.Component {
       }
     }
     this.setSlidesClassNames();
+
+    setTimeout(() => {
+      this.props.onChange();
+    }, 1250 * changeTime);
   };
 
   setClosestSlide = () => {

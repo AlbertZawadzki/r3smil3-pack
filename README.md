@@ -172,6 +172,19 @@ My own ReactJS components, currently in the pack:<br/>
   </tr>
    <tr>
     <td>
+      onChange
+    </td>
+    <td>
+     Function
+    </td>
+    <td><pre>null</pre>
+    </td>
+    <td>
+     Executes function whenever slide changes
+    </td>
+  </tr>
+   <tr>
+    <td>
       recurrence
     </td>
     <td>

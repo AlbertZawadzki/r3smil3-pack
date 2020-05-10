@@ -334,32 +334,49 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.setSlidesClassNames = function () {
-      var vertical = _this.state.vertical;
-      var firstSlidePartiallyVisible = false;
+      return setTimeout(function () {
+        var _this$state3 = _this.state,
+            fitToContainer = _this$state3.fitToContainer,
+            vertical = _this$state3.vertical;
+        var firstSlidePartiallyVisible = false;
 
-      for (var i = 0; i < _this.slides.childNodes.length; i++) {
-        //All slides have slide class name
-        _this.slides.childNodes[i].className = "slide ";
-        var slidePosition = vertical ? _this.slides.childNodes[i].getBoundingClientRect().top : _this.slides.childNodes[i].getBoundingClientRect().left;
-        var dimension = vertical ? _this.slides.childNodes[i].offsetHeight : _this.slides.childNodes[i].offsetWidth; //Slide is fully visible on site
+        for (var i = 0; i < _this.slides.childNodes.length; i++) {
+          //All slides have slide class name
+          _this.slides.childNodes[i].className = "slide ";
+          var slidePosition = vertical ? _this.slides.childNodes[i].getBoundingClientRect().top : _this.slides.childNodes[i].getBoundingClientRect().left;
+          var dimension = vertical ? _this.slides.childNodes[i].offsetHeight : _this.slides.childNodes[i].offsetWidth;
+          var sliderPosition = void 0;
+          var sliderSize = void 0; //Some bug
 
-        if (slidePosition >= 0 && slidePosition + dimension <= _this.sliderSize) {
-          _this.slides.childNodes[i].className += "visible ";
-        } //You can see only  end of a slide
-        else if (slidePosition >= 0 && slidePosition + dimension > _this.sliderSize) {
+          if (document.getElementById(_this.sliderId) !== null) {
+            sliderPosition = vertical ? document.getElementById(_this.sliderId).getBoundingClientRect().top : document.getElementById(_this.sliderId).getBoundingClientRect().left; //If fitToContainer is false, slider is on 100vh || 100vw
+
+            if (fitToContainer) {
+              sliderSize = vertical ? document.getElementById(_this.sliderId).offsetHeight : document.getElementById(_this.sliderId).offsetWidth;
+            } else {
+              sliderSize = vertical ? window.innerHeight : window.innerWidth;
+            }
+          }
+
+          var firstSettled = false;
+
+          if (sliderPosition > slidePosition + dimension) {
+            _this.slides.childNodes[i].className += "invisible ";
+          } else if (sliderPosition > slidePosition && sliderPosition <= slidePosition + dimension) {
+            _this.slides.childNodes[i].className += "partial-first ";
+          } else if (sliderPosition === slidePosition) {
+            _this.slides.childNodes[i].className += firstSettled ? "visible " : "first ";
+            firstSettled = true;
+          } else if (slidePosition < sliderSize) {
             _this.slides.childNodes[i].className += "partial ";
-          } //First slide is partially visible - block first className
-          else if (slidePosition < 0 && slidePosition + dimension > 0) {
-              _this.slides.childNodes[i].className += "partial first ";
-              firstSlidePartiallyVisible = true;
-            } //Inivisble
-            else {
-                _this.slides.childNodes[i].className += "invisible ";
-              }
-      } //Highlight first slide
-
-
-      if (!firstSlidePartiallyVisible) _this.slides.childNodes[_this.firstSlide].className += "first ";
+          } else if (slidePosition > sliderSize) {
+            _this.slides.childNodes[i].className += "invisible ";
+          } else {
+            _this.slides.childNodes[i].className += "unknown ";
+            console.error("r3smil3-pack", "unknown slide position");
+          }
+        }
+      }, 1250 * _this.state.changeTime);
     };
 
     _this.updateTasks = function () {
@@ -383,11 +400,11 @@ var Slider = /*#__PURE__*/function (_React$Component) {
        * If slider is not recurrencial
        * block it on max position, setClosestSlide blocks at 0
        */
-      var _this$state3 = _this.state,
-          changeTime = _this$state3.changeTime,
-          children = _this$state3.children,
-          rotatable = _this$state3.rotatable,
-          vertical = _this$state3.vertical;
+      var _this$state4 = _this.state,
+          changeTime = _this$state4.changeTime,
+          children = _this$state4.children,
+          rotatable = _this$state4.rotatable,
+          vertical = _this$state4.vertical;
 
       if (_this.recurrence === 1 || !rotatable) {
         if (_this.sliderRealPosition > _this.oneSlidesSetLength - _this.sliderSize) {
@@ -413,13 +430,17 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       }
 
       _this.setSlidesClassNames();
+
+      setTimeout(function () {
+        _this.props.onChange();
+      }, 1250 * changeTime);
     };
 
     _this.setClosestSlide = function () {
       if (!_this.attractableSlider) return;
-      var _this$state4 = _this.state,
-          changeTime = _this$state4.changeTime,
-          vertical = _this$state4.vertical;
+      var _this$state5 = _this.state,
+          changeTime = _this$state5.changeTime,
+          vertical = _this$state5.vertical;
       var closestSlide;
       var minimum = Infinity;
 
@@ -441,9 +462,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.moveSlider = function (currentPointerPosition) {
       if (typeof window === "undefined") return;
-      var _this$state5 = _this.state,
-          changeTime = _this$state5.changeTime,
-          vertical = _this$state5.vertical;
+      var _this$state6 = _this.state,
+          changeTime = _this$state6.changeTime,
+          vertical = _this$state6.vertical;
       var movement = currentPointerPosition - _this.previousPointerPosition; //tacticle handlign
 
       if (window.event.touches !== undefined) {
@@ -468,9 +489,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.moveSliderLeft = function () {
-      var _this$state6 = _this.state,
-          changeTime = _this$state6.changeTime,
-          vertical = _this$state6.vertical;
+      var _this$state7 = _this.state,
+          changeTime = _this$state7.changeTime,
+          vertical = _this$state7.vertical;
       _this.attractableSlider = true;
       _this.sliderRealPosition = _this.slidesBreaks[--_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
@@ -482,9 +503,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.moveSliderRight = function () {
-      var _this$state7 = _this.state,
-          changeTime = _this$state7.changeTime,
-          vertical = _this$state7.vertical;
+      var _this$state8 = _this.state,
+          changeTime = _this$state8.changeTime,
+          vertical = _this$state8.vertical;
       _this.attractableSlider = true;
       _this.sliderRealPosition = _this.slidesBreaks[++_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
@@ -551,7 +572,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.sliderNotFocused = true; //Defines if mouse is over the slider
 
-    _this.sliderId = (0, _uuid.v4)(); //Unique slider id
+    _this.sliderId; //Unique slider id
 
     _this.sliderPosition = 0; //Defines how much has the slider moved
 
@@ -565,7 +586,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.slidesWrapper = "Slides wrapper"; //Slides wrapper
 
-    _this.slidesWrapperId = (0, _uuid.v4)(); //Unique slides wrapper id
+    _this.slidesWrapperId; //Unique slides wrapper id
 
     _this.slidesWrapperSize = 0; //Slides wrapper size
 
@@ -612,6 +633,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     /* COMPONENT LIFE */
     value: function componentWillMount() {
+      this.sliderId = (0, _uuid.v4)();
+      this.slidesWrapperId = (0, _uuid.v4)();
       this.beforeMountTasks();
     }
   }, {
@@ -660,9 +683,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var _this3 = this;
 
-      var _this$state8 = this.state,
-          children = _this$state8.children,
-          siteHasLoaded = _this$state8.siteHasLoaded; //SSR check if window exists
+      var _this$state9 = this.state,
+          children = _this$state9.children,
+          siteHasLoaded = _this$state9.siteHasLoaded; //SSR check if window exists
 
       if (typeof window === "undefined") return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Window error");
       var iteratedChildren = this.renderSlides();
