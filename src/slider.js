@@ -34,16 +34,16 @@ export default class Slider extends React.Component {
       arrows: {
         show: true,
         left: { content: "Left", styles: {} },
-        right: { content: "Right", styles: {} }
+        right: { content: "Right", styles: {} },
       },
       autoPlay: {
         on: false,
         leftOrUp: false,
-        time: 5000
+        time: 5000,
       },
       center: {
         horizontally: false,
-        vertically: true
+        vertically: true,
       },
       children: [],
       draggable: true,
@@ -51,18 +51,19 @@ export default class Slider extends React.Component {
       rotatable: true,
       vertical: false,
       /* IMPORTANT SITE DATA */
-      siteHasLoaded: false //Defines if all necessery data has loaded
+      siteHasLoaded: false, //Defines if all necessery data has loaded
     };
   }
 
   /* COMPONENT INITIALISING */
 
   setSiteSize = () => {
+    if (typeof window === "undefined") return;
     this.siteHeight = window.innerHeight;
     this.siteWidth = window.innerWidth;
   };
 
-  setCurrentSettings = settings => {
+  setCurrentSettings = (settings) => {
     let {
       arrows,
       autoPlay,
@@ -71,7 +72,7 @@ export default class Slider extends React.Component {
       fitToContainer,
       rotatable,
       startNumber,
-      vertical
+      vertical,
     } = settings;
 
     if (typeof arrows !== "undefined")
@@ -113,6 +114,7 @@ export default class Slider extends React.Component {
   };
 
   followPointer = () => {
+    if (typeof window === "undefined") return;
     //Everything is visible
     if (this.sliderSize > this.oneSlidesSetLength) return;
 
@@ -219,6 +221,7 @@ export default class Slider extends React.Component {
   };
 
   setListeners = () => {
+    if (typeof window === "undefined") return;
     window.addEventListener("resize", () => this.resizeTasks());
     window.addEventListener("mousemove", () => this.followPointer());
     window.addEventListener("touchmove", () => this.followPointer());
@@ -377,6 +380,7 @@ export default class Slider extends React.Component {
   }
 
   componentWillUnmount() {
+    if (typeof window === "undefined") return;
     window.removeEventListener("resize", () => this.resizeTasks());
     window.removeEventListener("mousemove", () => this.followPointer());
     window.removeEventListener("touchmove", () => this.followPointer());
@@ -477,7 +481,8 @@ export default class Slider extends React.Component {
     this.fakeInfinity();
   };
 
-  moveSlider = currentPointerPosition => {
+  moveSlider = (currentPointerPosition) => {
+    if (typeof window === "undefined") return;
     const { vertical } = this.state;
 
     let movement = currentPointerPosition - this.previousPointerPosition;
@@ -551,7 +556,7 @@ export default class Slider extends React.Component {
     this.fakeInfinity();
   };
 
-  sliderIsFocused = status => {
+  sliderIsFocused = (status) => {
     this.sliderNotFocused = !status;
   };
 
@@ -601,8 +606,8 @@ export default class Slider extends React.Component {
           onMouseOut={() => this.sliderIsFocused(false)}
         >
           <div id={this.slidesWrapperId}>
-            {iteratedChildren.map(iteration =>
-              children.map(child => <div key={v4()}>{child}</div>)
+            {iteratedChildren.map((iteration) =>
+              children.map((child) => <div key={v4()}>{child}</div>)
             )}
           </div>
           {this.renderArrows()}
@@ -616,7 +621,7 @@ export default class Slider extends React.Component {
           onMouseOut={() => this.sliderIsFocused(false)}
         >
           <div id={this.slidesWrapperId}>
-            {children.map(child => (
+            {children.map((child) => (
               <div key={v4()}>{child}</div>
             ))}
           </div>
