@@ -3,17 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports["default"] = void 0;
 
 var _react = _interopRequireDefault(require("react"));
 
 var _uuid = require("uuid");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -23,9 +25,13 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -33,20 +39,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-var Slider =
-/*#__PURE__*/
-function (_React$Component) {
+var Slider = /*#__PURE__*/function (_React$Component) {
   _inherits(Slider, _React$Component);
+
+  var _super = _createSuper(Slider);
 
   function Slider(props) {
     var _this;
 
     _classCallCheck(this, Slider);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Slider).call(this, props));
+    _this = _super.call(this, props);
     /* GENERAL SLIDER ITEMS */
 
     _this.setSiteSize = function () {
+      if (typeof window === "undefined") return;
       _this.siteHeight = window.innerHeight;
       _this.siteWidth = window.innerWidth;
     };
@@ -61,13 +68,13 @@ function (_React$Component) {
           startNumber = settings.startNumber,
           vertical = settings.vertical;
       if (typeof arrows !== "undefined") _this.setState({
-        arrows: _objectSpread({}, _this.state.arrows, arrows)
+        arrows: _objectSpread({}, _this.state.arrows, {}, arrows)
       });
       if (typeof autoPlay !== "undefined") _this.setState({
-        autoPlay: _objectSpread({}, _this.state.autoPlay, autoPlay)
+        autoPlay: _objectSpread({}, _this.state.autoPlay, {}, autoPlay)
       });
       if (typeof center !== "undefined") _this.setState({
-        center: _objectSpread({}, _this.state.center, center)
+        center: _objectSpread({}, _this.state.center, {}, center)
       });
       if (typeof draggable !== "undefined") _this.setState({
         draggable: draggable
@@ -112,7 +119,8 @@ function (_React$Component) {
     };
 
     _this.followPointer = function () {
-      //Everything is visible
+      if (typeof window === "undefined") return; //Everything is visible
+
       if (_this.sliderSize > _this.oneSlidesSetLength) return;
       var vertical = _this.state.vertical; //set current mouse position
 
@@ -221,6 +229,7 @@ function (_React$Component) {
     };
 
     _this.setListeners = function () {
+      if (typeof window === "undefined") return;
       window.addEventListener("resize", function () {
         return _this.resizeTasks();
       });
@@ -423,6 +432,7 @@ function (_React$Component) {
     };
 
     _this.moveSlider = function (currentPointerPosition) {
+      if (typeof window === "undefined") return;
       var vertical = _this.state.vertical;
       var movement = currentPointerPosition - _this.previousPointerPosition; //tacticle handlign
 
@@ -477,13 +487,13 @@ function (_React$Component) {
 
     _this.renderArrows = function () {
       var arrows = _this.state.arrows;
-      if (!arrows.show) return _react.default.createElement(_react.default.Fragment, null);
-      return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement("div", {
+      if (!arrows.show) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
+      return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         onClick: function onClick() {
           return _this.moveSliderLeft();
         },
         style: _objectSpread({}, arrows.left.styles)
-      }, arrows.left.content), _react.default.createElement("div", {
+      }, arrows.left.content), /*#__PURE__*/_react["default"].createElement("div", {
         onClick: function onClick() {
           return _this.moveSliderRight();
         },
@@ -604,6 +614,7 @@ function (_React$Component) {
     value: function componentWillUnmount() {
       var _this2 = this;
 
+      if (typeof window === "undefined") return;
       window.removeEventListener("resize", function () {
         return _this2.resizeTasks();
       });
@@ -638,11 +649,11 @@ function (_React$Component) {
           children = _this$state4.children,
           siteHasLoaded = _this$state4.siteHasLoaded; //SSR check if window exists
 
-      if (typeof window === "undefined") return _react.default.createElement(_react.default.Fragment, null, "Window error");
+      if (typeof window === "undefined") return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Window error");
       var iteratedChildren = this.renderSlides();
 
       if (siteHasLoaded) {
-        return _react.default.createElement("div", {
+        return /*#__PURE__*/_react["default"].createElement("div", {
           id: this.sliderId,
           style: {
             background: "lightgray"
@@ -653,17 +664,17 @@ function (_React$Component) {
           onMouseOut: function onMouseOut() {
             return _this3.sliderIsFocused(false);
           }
-        }, _react.default.createElement("div", {
+        }, /*#__PURE__*/_react["default"].createElement("div", {
           id: this.slidesWrapperId
         }, iteratedChildren.map(function (iteration) {
           return children.map(function (child) {
-            return _react.default.createElement("div", {
+            return /*#__PURE__*/_react["default"].createElement("div", {
               key: (0, _uuid.v4)()
             }, child);
           });
         })), this.renderArrows());
       } else {
-        return _react.default.createElement("div", {
+        return /*#__PURE__*/_react["default"].createElement("div", {
           id: this.sliderId,
           onMouseOver: function onMouseOver() {
             return _this3.sliderIsFocused(true);
@@ -671,10 +682,10 @@ function (_React$Component) {
           onMouseOut: function onMouseOut() {
             return _this3.sliderIsFocused(false);
           }
-        }, _react.default.createElement("div", {
+        }, /*#__PURE__*/_react["default"].createElement("div", {
           id: this.slidesWrapperId
         }, children.map(function (child) {
-          return _react.default.createElement("div", {
+          return /*#__PURE__*/_react["default"].createElement("div", {
             key: (0, _uuid.v4)()
           }, child);
         })), this.renderArrows());
@@ -683,6 +694,6 @@ function (_React$Component) {
   }]);
 
   return Slider;
-}(_react.default.Component);
+}(_react["default"].Component);
 
-exports.default = Slider;
+exports["default"] = Slider;
