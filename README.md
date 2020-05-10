@@ -125,10 +125,10 @@ My own ReactJS components, currently in the pack:<br/>
     </td>
     <td>Integer
     </td>
-    <td><pre>0.25</pre>
+    <td><pre>250 ms</pre>
     </td>
     <td>
-     Time of sliding slides
+     Time of sliding slides in miliseconds
     </td>
   </tr>
    <tr>

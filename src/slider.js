@@ -83,7 +83,8 @@ export default class Slider extends React.Component {
       this.setState({ autoPlay: { ...this.state.autoPlay, ...autoPlay } });
     if (typeof center !== "undefined")
       this.setState({ center: { ...this.state.center, ...center } });
-    if (typeof changeTime !== "undefined") this.setState({ changeTime });
+    if (typeof changeTime !== "undefined")
+      this.setState({ changeTime: changeTime / 1000 });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
@@ -438,7 +439,7 @@ export default class Slider extends React.Component {
           this.slidesWrapper.style.transform = vertical
             ? `translateY(${this.sliderPosition}px)`
             : `translateX(${this.sliderPosition}px)`;
-        }, 200 * changeTime);
+        }, 1500 * changeTime);
       }
     }
     this.setSlidesClassNames();
