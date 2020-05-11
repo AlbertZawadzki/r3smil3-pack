@@ -65,9 +65,13 @@ var Slider = /*#__PURE__*/function (_React$Component) {
           changeTime = settings.changeTime,
           draggable = settings.draggable,
           fitToContainer = settings.fitToContainer,
+          id = settings.id,
           rotatable = settings.rotatable,
           startNumber = settings.startNumber,
           vertical = settings.vertical;
+      if (typeof id === "undefined") console.error("Fatal error, no id given");
+      _this.sliderId = "slider-".concat(id);
+      _this.slidesWrapperId = "slides-wrapper-".concat(id);
       if (typeof arrows !== "undefined") _this.setState({
         arrows: _objectSpread({}, _this.state.arrows, {}, arrows)
       });
@@ -113,13 +117,13 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.resizeTasks = function () {
-      _this.setState({
-        siteHasLoaded: false
-      });
-
       _this.beforeMountTasks();
 
-      _this.afterMountTasks();
+      _this.getSlidesBreaks();
+
+      _this.setState({
+        state: _this.state
+      });
     };
 
     _this.followPointer = function () {
@@ -151,7 +155,21 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.setSliderSettings(); //Set children
 
 
-      var children = _this.props.children;
+      var children = _this.props.children; //One slideonly
+
+      if (typeof children.length === "undefined") {
+        children = [children];
+
+        _this.setState({
+          autoPlay: _objectSpread({}, _this.state.autoPlay, {
+            on: false
+          })
+        });
+
+        _this.setState({
+          rotatable: false
+        });
+      }
 
       _this.setState({
         children: children
@@ -313,8 +331,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.slidesWrapper.style.flexDirection = vertical ? "column" : "row";
       _this.slidesWrapper.style.justifyContent = !vertical && center.horizontally ? "space-evenly" : "flex-start";
       _this.slidesWrapper.style.alignContent = !vertical && center.vertically ? "space-around" : "start";
-      _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
-      _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s ease-in-out"); //Styling slides
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0 ") : "0 0 0 ".concat(_this.sliderPosition, "px");
+      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s ease-in-out"); //Styling slides
 
       for (var i = 0; i < _this.slides.childNodes.length; i++) {
         _this.slides.childNodes[i].display = "flex";
@@ -373,7 +391,6 @@ var Slider = /*#__PURE__*/function (_React$Component) {
             _this.slides.childNodes[i].className += "invisible ";
           } else {
             _this.slides.childNodes[i].className += "unknown ";
-            console.error("r3smil3-pack", "unknown slide position");
           }
         }
       }, 1250 * _this.state.changeTime);
@@ -410,8 +427,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
         if (_this.sliderRealPosition > _this.oneSlidesSetLength - _this.sliderSize) {
           _this.sliderPosition = _this.sliderSize - _this.oneSlidesSetLength;
           _this.sliderRealPosition = _this.oneSlidesSetLength - _this.slider.offsetWidth;
-          _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s");
-          _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
+          _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+          _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
         }
       } else {
         var maxItem = children.length * (_this.recurrence - 1);
@@ -423,16 +440,16 @@ var Slider = /*#__PURE__*/function (_React$Component) {
           _this.sliderPosition = -_this.slidesBreaks[_this.firstSlide] - _this.positionMover * _this.oneSlidesSetLength;
           _this.sliderRealPosition = -_this.sliderPosition;
           setTimeout(function () {
-            _this.slidesWrapper.style.transition = "transform 0s";
-            _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
-          }, 1500 * changeTime);
+            _this.slidesWrapper.style.transition = "margin 0s";
+            _this.slidesWrapper.style.magin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
+          }, 1250 * changeTime);
         }
       }
 
       _this.setSlidesClassNames();
 
       setTimeout(function () {
-        _this.props.onChange();
+        if (typeof _this.props.onChange !== "undefined") _this.props.onChange();
       }, 1250 * changeTime);
     };
 
@@ -454,8 +471,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.firstSlide = closestSlide;
       _this.sliderRealPosition = _this.slidesBreaks[closestSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[closestSlide] + _this.positionMover * _this.oneSlidesSetLength);
-      _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s");
-      _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
+      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
 
       _this.fakeInfinity();
     };
@@ -473,11 +490,11 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
       _this.sliderPosition += movement;
       _this.sliderRealPosition += movement;
-      _this.slidesWrapper.style.transition = "transform 0s";
-      _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)"); //Needed for attractibily to set
+      _this.slidesWrapper.style.transition = "margin 0s";
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px"); //Needed for attractibily to set
 
       setTimeout(function () {
-        _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s");
+        _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
       }, 10);
       var findClosestSlide = setInterval(function () {
         if (_this.attractableSlider) {
@@ -495,8 +512,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.attractableSlider = true;
       _this.sliderRealPosition = _this.slidesBreaks[--_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
-      _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s");
-      _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
+      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
       _this.attractableSlider = false;
 
       _this.fakeInfinity();
@@ -509,8 +526,8 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.attractableSlider = true;
       _this.sliderRealPosition = _this.slidesBreaks[++_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
-      _this.slidesWrapper.style.transition = "transform ".concat(changeTime, "s");
-      _this.slidesWrapper.style.transform = vertical ? "translateY(".concat(_this.sliderPosition, "px)") : "translateX(".concat(_this.sliderPosition, "px)");
+      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
       _this.attractableSlider = false;
 
       _this.fakeInfinity();
@@ -521,8 +538,10 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.renderArrows = function () {
-      var arrows = _this.state.arrows;
-      if (!arrows.show) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
+      var _this$state9 = _this.state,
+          arrows = _this$state9.arrows,
+          children = _this$state9.children;
+      if (!arrows.show || children.length < 2) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         onClick: function onClick() {
           return _this.moveSliderLeft();
@@ -538,6 +557,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.renderSlides = function () {
       var iterations = [];
+      var children = _this.state.children;
 
       for (var i = 0; i < _this.recurrence; i++) {
         iterations.push(i);
@@ -633,8 +653,6 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     /* COMPONENT LIFE */
     value: function componentWillMount() {
-      this.sliderId = (0, _uuid.v4)();
-      this.slidesWrapperId = (0, _uuid.v4)();
       this.beforeMountTasks();
     }
   }, {
@@ -683,9 +701,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     value: function render() {
       var _this3 = this;
 
-      var _this$state9 = this.state,
-          children = _this$state9.children,
-          siteHasLoaded = _this$state9.siteHasLoaded; //SSR check if window exists
+      var _this$state10 = this.state,
+          children = _this$state10.children,
+          siteHasLoaded = _this$state10.siteHasLoaded; //SSR check if window exists
 
       if (typeof window === "undefined") return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Window error");
       var iteratedChildren = this.renderSlides();
@@ -693,9 +711,6 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       if (siteHasLoaded) {
         return /*#__PURE__*/_react["default"].createElement("div", {
           id: this.sliderId,
-          style: {
-            background: "lightgray"
-          },
           onMouseOver: function onMouseOver() {
             return _this3.sliderIsFocused(true);
           },
