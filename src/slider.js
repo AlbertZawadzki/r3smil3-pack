@@ -33,6 +33,7 @@ export default class Slider extends React.Component {
       /* DEFAULT SLIDER SETTINGS */
       arrows: {
         show: true,
+        slides: 1,
         left: { content: "Left", styles: {} },
         right: { content: "Right", styles: {} },
       },
@@ -117,9 +118,11 @@ export default class Slider extends React.Component {
   };
 
   resizeTasks = () => {
-    this.beforeMountTasks();
-    this.getSlidesBreaks();
-    this.setState({ state: this.state });
+    setTimeout(() => {
+      this.beforeMountTasks();
+      this.getSlidesBreaks();
+      this.singleMoveSliderRight();
+    }, 10);
   };
 
   followPointer = () => {
@@ -467,7 +470,7 @@ export default class Slider extends React.Component {
 
         setTimeout(() => {
           this.slidesWrapper.style.transition = "margin 0s";
-          this.slidesWrapper.style.magin = vertical
+          this.slidesWrapper.style.margin = vertical
             ? `${this.sliderPosition}px 0 0 0`
             : `0 0 0 ${this.sliderPosition}px`;
         }, 1250 * changeTime);
@@ -553,8 +556,9 @@ export default class Slider extends React.Component {
     }, 100);
   };
 
-  moveSliderLeft = () => {
+  singleMoveSliderLeft() {
     const { changeTime, vertical } = this.state;
+
     this.attractableSlider = true;
 
     this.sliderRealPosition =
@@ -572,9 +576,23 @@ export default class Slider extends React.Component {
 
     this.attractableSlider = false;
     this.fakeInfinity();
+  }
+
+  moveSliderLeft = () => {
+    const { arrows, changeTime } = this.state;
+    let i = 1;
+
+    this.singleMoveSliderLeft();
+    let interval = setInterval(() => {
+      if (++i >= arrows.slides - 1) {
+        window.clearInterval(interval);
+      } else {
+        this.singleMoveSliderLeft();
+      }
+    }, 1250 * changeTime);
   };
 
-  moveSliderRight = () => {
+  singleMoveSliderRight = () => {
     const { changeTime, vertical } = this.state;
     this.attractableSlider = true;
 
@@ -593,6 +611,20 @@ export default class Slider extends React.Component {
 
     this.attractableSlider = false;
     this.fakeInfinity();
+  };
+
+  moveSliderRight = () => {
+    const { arrows, changeTime } = this.state;
+    let i = 1;
+
+    this.singleMoveSliderRight();
+    let interval = setInterval(() => {
+      if (++i >= arrows.slides - 1) {
+        window.clearInterval(interval);
+      } else {
+        this.singleMoveSliderRight();
+      }
+    }, 1250 * changeTime);
   };
 
   sliderIsFocused = (status) => {

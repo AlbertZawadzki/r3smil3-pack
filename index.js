@@ -117,13 +117,13 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.resizeTasks = function () {
-      _this.beforeMountTasks();
+      setTimeout(function () {
+        _this.beforeMountTasks();
 
-      _this.getSlidesBreaks();
+        _this.getSlidesBreaks();
 
-      _this.setState({
-        state: _this.state
-      });
+        _this.singleMoveSliderRight();
+      }, 10);
     };
 
     _this.followPointer = function () {
@@ -441,7 +441,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
           _this.sliderRealPosition = -_this.sliderPosition;
           setTimeout(function () {
             _this.slidesWrapper.style.transition = "margin 0s";
-            _this.slidesWrapper.style.magin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
+            _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
           }, 1250 * changeTime);
         }
       }
@@ -507,19 +507,22 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.moveSliderLeft = function () {
       var _this$state7 = _this.state,
-          changeTime = _this$state7.changeTime,
-          vertical = _this$state7.vertical;
-      _this.attractableSlider = true;
-      _this.sliderRealPosition = _this.slidesBreaks[--_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
-      _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
-      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
-      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
-      _this.attractableSlider = false;
+          arrows = _this$state7.arrows,
+          changeTime = _this$state7.changeTime;
+      var i = 1;
 
-      _this.fakeInfinity();
+      _this.singleMoveSliderLeft();
+
+      var interval = setInterval(function () {
+        if (++i >= arrows.slides - 1) {
+          window.clearInterval(interval);
+        } else {
+          _this.singleMoveSliderLeft();
+        }
+      }, 1250 * changeTime);
     };
 
-    _this.moveSliderRight = function () {
+    _this.singleMoveSliderRight = function () {
       var _this$state8 = _this.state,
           changeTime = _this$state8.changeTime,
           vertical = _this$state8.vertical;
@@ -533,14 +536,31 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       _this.fakeInfinity();
     };
 
+    _this.moveSliderRight = function () {
+      var _this$state9 = _this.state,
+          arrows = _this$state9.arrows,
+          changeTime = _this$state9.changeTime;
+      var i = 1;
+
+      _this.singleMoveSliderRight();
+
+      var interval = setInterval(function () {
+        if (++i >= arrows.slides - 1) {
+          window.clearInterval(interval);
+        } else {
+          _this.singleMoveSliderRight();
+        }
+      }, 1250 * changeTime);
+    };
+
     _this.sliderIsFocused = function (status) {
       _this.sliderNotFocused = !status;
     };
 
     _this.renderArrows = function () {
-      var _this$state9 = _this.state,
-          arrows = _this$state9.arrows,
-          children = _this$state9.children;
+      var _this$state10 = _this.state,
+          arrows = _this$state10.arrows,
+          children = _this$state10.children;
       if (!arrows.show || children.length < 2) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         onClick: function onClick() {
@@ -614,6 +634,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       /* DEFAULT SLIDER SETTINGS */
       arrows: {
         show: true,
+        slides: 1,
         left: {
           content: "Left",
           styles: {}
@@ -697,13 +718,27 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     /* SLIDER MOVEMENT */
 
   }, {
+    key: "singleMoveSliderLeft",
+    value: function singleMoveSliderLeft() {
+      var _this$state11 = this.state,
+          changeTime = _this$state11.changeTime,
+          vertical = _this$state11.vertical;
+      this.attractableSlider = true;
+      this.sliderRealPosition = this.slidesBreaks[--this.firstSlide] + this.positionMover * this.oneSlidesSetLength;
+      this.sliderPosition = -(this.slidesBreaks[this.firstSlide] + this.positionMover * this.oneSlidesSetLength);
+      this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+      this.slidesWrapper.style.margin = vertical ? "".concat(this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(this.sliderPosition, "px");
+      this.attractableSlider = false;
+      this.fakeInfinity();
+    }
+  }, {
     key: "render",
     value: function render() {
       var _this3 = this;
 
-      var _this$state10 = this.state,
-          children = _this$state10.children,
-          siteHasLoaded = _this$state10.siteHasLoaded; //SSR check if window exists
+      var _this$state12 = this.state,
+          children = _this$state12.children,
+          siteHasLoaded = _this$state12.siteHasLoaded; //SSR check if window exists
 
       if (typeof window === "undefined") return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Window error");
       var iteratedChildren = this.renderSlides();

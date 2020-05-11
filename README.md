@@ -53,6 +53,7 @@ My own ReactJS components, currently in the pack:<br/>
     <td>
     <pre>Object: {
   show: Boolean,
+  slides: Integer,
   left: {
     content: Object || String,
     styles: Object
@@ -66,6 +67,7 @@ My own ReactJS components, currently in the pack:<br/>
     <td>
       <pre>{
   show: true,
+  slides: 1,
   left: {
     content: "Left",
     styles: {}
@@ -77,7 +79,7 @@ My own ReactJS components, currently in the pack:<br/>
 }</pre>
     </td>
     <td>
-      Sets styling and content of arrows
+      Sets styling and content of arrows, slides decides how many slides are slided at once
     </td>
   </tr>
   <tr>
