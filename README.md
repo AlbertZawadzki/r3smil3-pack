@@ -172,6 +172,19 @@ My own ReactJS components, currently in the pack:<br/>
   </tr>
    <tr>
     <td>
+      id
+    </td>
+    <td>
+     uuid
+    </td>
+    <td><pre>null</pre>
+    </td>
+    <td>
+    Required
+    </td>
+  </tr>
+   <tr>
+    <td>
       onChange
     </td>
     <td>

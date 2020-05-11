@@ -72,10 +72,15 @@ export default class Slider extends React.Component {
       changeTime,
       draggable,
       fitToContainer,
+      id,
       rotatable,
       startNumber,
       vertical,
     } = settings;
+
+    if (typeof id === "undefined") console.error("Fatal error, no id given");
+    this.sliderId = `slider-${id}`;
+    this.slidesWrapperId = `slides-wrapper-${id}`;
 
     if (typeof arrows !== "undefined")
       this.setState({ arrows: { ...this.state.arrows, ...arrows } });
@@ -112,9 +117,9 @@ export default class Slider extends React.Component {
   };
 
   resizeTasks = () => {
-    this.setState({ siteHasLoaded: false });
     this.beforeMountTasks();
-    this.afterMountTasks();
+    this.getSlidesBreaks();
+    this.setState({ state: this.state });
   };
 
   followPointer = () => {
@@ -150,7 +155,13 @@ export default class Slider extends React.Component {
     //Setup slider
     this.setSliderSettings();
     //Set children
-    const { children } = this.props;
+    let { children } = this.props;
+    //One slideonly
+    if (typeof children.length === "undefined") {
+      children = [children];
+      this.setState({ autoPlay: { ...this.state.autoPlay, on: false } });
+      this.setState({ rotatable: false });
+    }
     this.setState({ children });
   };
 
@@ -235,6 +246,7 @@ export default class Slider extends React.Component {
 
   afterMountTasks = () => {
     const { vertical } = this.state;
+
     //Assign slider to a var
     this.slider = document.getElementById(this.sliderId);
     //Assign slides wrapper to a var
@@ -291,10 +303,10 @@ export default class Slider extends React.Component {
       !vertical && center.horizontally ? "space-evenly" : "flex-start";
     this.slidesWrapper.style.alignContent =
       !vertical && center.vertically ? "space-around" : "start";
-    this.slidesWrapper.style.transform = vertical
-      ? `translateY(${this.sliderPosition}px)`
-      : `translateX(${this.sliderPosition}px)`;
-    this.slidesWrapper.style.transition = `transform ${changeTime}s ease-in-out`;
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0 `
+      : `0 0 0 ${this.sliderPosition}px`;
+    this.slidesWrapper.style.transition = `margin ${changeTime}s ease-in-out`;
 
     //Styling slides
     for (let i = 0; i < this.slides.childNodes.length; i++) {
@@ -371,7 +383,6 @@ export default class Slider extends React.Component {
           this.slides.childNodes[i].className += "invisible ";
         } else {
           this.slides.childNodes[i].className += "unknown ";
-          console.error("r3smil3-pack", "unknown slide position");
         }
       }
     }, 1250 * this.state.changeTime);
@@ -391,8 +402,6 @@ export default class Slider extends React.Component {
   /* COMPONENT LIFE */
 
   componentWillMount() {
-    this.sliderId = v4();
-    this.slidesWrapperId = v4();
     this.beforeMountTasks();
   }
 
@@ -435,10 +444,10 @@ export default class Slider extends React.Component {
         this.sliderPosition = this.sliderSize - this.oneSlidesSetLength;
         this.sliderRealPosition =
           this.oneSlidesSetLength - this.slider.offsetWidth;
-        this.slidesWrapper.style.transition = `transform ${changeTime}s`;
-        this.slidesWrapper.style.transform = vertical
-          ? `translateY(${this.sliderPosition}px)`
-          : `translateX(${this.sliderPosition}px)`;
+        this.slidesWrapper.style.transition = `margin ${changeTime}s`;
+        this.slidesWrapper.style.margin = vertical
+          ? `${this.sliderPosition}px 0 0 0`
+          : `0 0 0 ${this.sliderPosition}px`;
       }
     } else {
       let maxItem = children.length * (this.recurrence - 1);
@@ -455,18 +464,19 @@ export default class Slider extends React.Component {
           this.positionMover * this.oneSlidesSetLength;
 
         this.sliderRealPosition = -this.sliderPosition;
+
         setTimeout(() => {
-          this.slidesWrapper.style.transition = "transform 0s";
-          this.slidesWrapper.style.transform = vertical
-            ? `translateY(${this.sliderPosition}px)`
-            : `translateX(${this.sliderPosition}px)`;
-        }, 1500 * changeTime);
+          this.slidesWrapper.style.transition = "margin 0s";
+          this.slidesWrapper.style.magin = vertical
+            ? `${this.sliderPosition}px 0 0 0`
+            : `0 0 0 ${this.sliderPosition}px`;
+        }, 1250 * changeTime);
       }
     }
     this.setSlidesClassNames();
 
     setTimeout(() => {
-      this.props.onChange();
+      if (typeof this.props.onChange !== "undefined") this.props.onChange();
     }, 1250 * changeTime);
   };
 
@@ -502,10 +512,10 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
-    this.slidesWrapper.style.transform = vertical
-      ? `translateY(${this.sliderPosition}px)`
-      : `translateX(${this.sliderPosition}px)`;
+    this.slidesWrapper.style.transition = `margin ${changeTime}s`;
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0`
+      : `0 0 0 ${this.sliderPosition}px`;
 
     this.fakeInfinity();
   };
@@ -525,14 +535,14 @@ export default class Slider extends React.Component {
     this.sliderPosition += movement;
     this.sliderRealPosition += movement;
 
-    this.slidesWrapper.style.transition = "transform 0s";
-    this.slidesWrapper.style.transform = vertical
-      ? `translateY(${this.sliderPosition}px)`
-      : `translateX(${this.sliderPosition}px)`;
+    this.slidesWrapper.style.transition = "margin 0s";
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0`
+      : `0 0 0 ${this.sliderPosition}px`;
 
     //Needed for attractibily to set
     setTimeout(() => {
-      this.slidesWrapper.style.transition = `transform ${changeTime}s`;
+      this.slidesWrapper.style.transition = `margin ${changeTime}s`;
     }, 10);
 
     const findClosestSlide = setInterval(() => {
@@ -555,10 +565,10 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
-    this.slidesWrapper.style.transform = vertical
-      ? `translateY(${this.sliderPosition}px)`
-      : `translateX(${this.sliderPosition}px)`;
+    this.slidesWrapper.style.transition = `margin ${changeTime}s`;
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0`
+      : `0 0 0 ${this.sliderPosition}px`;
 
     this.attractableSlider = false;
     this.fakeInfinity();
@@ -576,10 +586,10 @@ export default class Slider extends React.Component {
       this.positionMover * this.oneSlidesSetLength
     );
 
-    this.slidesWrapper.style.transition = `transform ${changeTime}s`;
-    this.slidesWrapper.style.transform = vertical
-      ? `translateY(${this.sliderPosition}px)`
-      : `translateX(${this.sliderPosition}px)`;
+    this.slidesWrapper.style.transition = `margin ${changeTime}s`;
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0`
+      : `0 0 0 ${this.sliderPosition}px`;
 
     this.attractableSlider = false;
     this.fakeInfinity();
@@ -592,9 +602,9 @@ export default class Slider extends React.Component {
   /*  RENDERING */
 
   renderArrows = () => {
-    const { arrows } = this.state;
+    const { arrows, children } = this.state;
 
-    if (!arrows.show) return <></>;
+    if (!arrows.show || children.length < 2) return <></>;
     return (
       <>
         <div
@@ -615,6 +625,7 @@ export default class Slider extends React.Component {
 
   renderSlides = () => {
     let iterations = [];
+    const { children } = this.state;
     for (let i = 0; i < this.recurrence; i++) iterations.push(i);
     return iterations;
   };
@@ -630,7 +641,6 @@ export default class Slider extends React.Component {
       return (
         <div
           id={this.sliderId}
-          style={{ background: "lightgray" }}
           onMouseOver={() => this.sliderIsFocused(true)}
           onMouseOut={() => this.sliderIsFocused(false)}
         >
