@@ -110,20 +110,24 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       if (responsive && responsive.length > 0) {
         for (var i = 0; i < responsive.length; i++) {
           if (responsive[i].vertical && responsive[i].breakPoint > _this.siteHeight || responsive[i].breakPoint > _this.siteWidth) {
-            _this.setSettings(_this.props.responsive[i]);
+            _this.setCurrentSettings(_this.props.responsive[i]);
           }
         }
       }
     };
 
     _this.resizeTasks = function () {
-      setTimeout(function () {
-        _this.beforeMountTasks();
+      return setTimeout(function () {
+        _this.moveSliderRight();
 
+        _this.moveSliderLeft();
+      }, 250);
+    };
+
+    _this.recurrenceTasks = function () {
+      return setInterval(function () {
         _this.getSlidesBreaks();
-
-        _this.singleMoveSliderRight();
-      }, 10);
+      }, 100);
     };
 
     _this.followPointer = function () {
@@ -508,26 +512,11 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     _this.moveSliderLeft = function () {
       var _this$state7 = _this.state,
           arrows = _this$state7.arrows,
-          changeTime = _this$state7.changeTime;
-      var i = 1;
-
-      _this.singleMoveSliderLeft();
-
-      var interval = setInterval(function () {
-        if (++i >= arrows.slides - 1) {
-          window.clearInterval(interval);
-        } else {
-          _this.singleMoveSliderLeft();
-        }
-      }, 1250 * changeTime);
-    };
-
-    _this.singleMoveSliderRight = function () {
-      var _this$state8 = _this.state,
-          changeTime = _this$state8.changeTime,
-          vertical = _this$state8.vertical;
+          changeTime = _this$state7.changeTime,
+          vertical = _this$state7.vertical;
       _this.attractableSlider = true;
-      _this.sliderRealPosition = _this.slidesBreaks[++_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
+      _this.firstSlide -= arrows.slides;
+      _this.sliderRealPosition = _this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
       _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
       _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
       _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
@@ -537,20 +526,19 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.moveSliderRight = function () {
-      var _this$state9 = _this.state,
-          arrows = _this$state9.arrows,
-          changeTime = _this$state9.changeTime;
-      var i = 1;
+      var _this$state8 = _this.state,
+          arrows = _this$state8.arrows,
+          changeTime = _this$state8.changeTime,
+          vertical = _this$state8.vertical;
+      _this.attractableSlider = true;
+      _this.firstSlide += arrows.slides;
+      _this.sliderRealPosition = _this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength;
+      _this.sliderPosition = -(_this.slidesBreaks[_this.firstSlide] + _this.positionMover * _this.oneSlidesSetLength);
+      _this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
+      _this.slidesWrapper.style.margin = vertical ? "".concat(_this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(_this.sliderPosition, "px");
+      _this.attractableSlider = false;
 
-      _this.singleMoveSliderRight();
-
-      var interval = setInterval(function () {
-        if (++i >= arrows.slides - 1) {
-          window.clearInterval(interval);
-        } else {
-          _this.singleMoveSliderRight();
-        }
-      }, 1250 * changeTime);
+      _this.fakeInfinity();
     };
 
     _this.sliderIsFocused = function (status) {
@@ -558,10 +546,10 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.renderArrows = function () {
-      var _this$state10 = _this.state,
-          arrows = _this$state10.arrows,
-          children = _this$state10.children;
-      if (!arrows.show || children.length < 2) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
+      var _this$state9 = _this.state,
+          arrows = _this$state9.arrows,
+          children = _this$state9.children;
+      if (!arrows.show || children.length < 2 || _this.oneSlidesSetLength < _this.parentSize) return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null);
       return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, /*#__PURE__*/_react["default"].createElement("div", {
         onClick: function onClick() {
           return _this.moveSliderLeft();
@@ -618,7 +606,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
     _this.sliderRealPosition = 0; //Defines how much has the slider moved relativily
 
-    _this.sliderSize = 0; //Defines the width  or height of slider
+    _this.sliderSize = 0; //Defines the width or height of slider
 
     _this.slides = "Slides"; //Slides
 
@@ -680,6 +668,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     key: "componentDidMount",
     value: function componentDidMount() {
       this.afterMountTasks();
+      this.recurrenceTasks();
     }
   }, {
     key: "componentDidUpdate",
@@ -714,31 +703,18 @@ var Slider = /*#__PURE__*/function (_React$Component) {
         return _this2.dragSlider();
       });
       clearInterval(this.autoPlay);
+      clearInterval(this.recurrenceTasks());
     }
     /* SLIDER MOVEMENT */
 
-  }, {
-    key: "singleMoveSliderLeft",
-    value: function singleMoveSliderLeft() {
-      var _this$state11 = this.state,
-          changeTime = _this$state11.changeTime,
-          vertical = _this$state11.vertical;
-      this.attractableSlider = true;
-      this.sliderRealPosition = this.slidesBreaks[--this.firstSlide] + this.positionMover * this.oneSlidesSetLength;
-      this.sliderPosition = -(this.slidesBreaks[this.firstSlide] + this.positionMover * this.oneSlidesSetLength);
-      this.slidesWrapper.style.transition = "margin ".concat(changeTime, "s");
-      this.slidesWrapper.style.margin = vertical ? "".concat(this.sliderPosition, "px 0 0 0") : "0 0 0 ".concat(this.sliderPosition, "px");
-      this.attractableSlider = false;
-      this.fakeInfinity();
-    }
   }, {
     key: "render",
     value: function render() {
       var _this3 = this;
 
-      var _this$state12 = this.state,
-          children = _this$state12.children,
-          siteHasLoaded = _this$state12.siteHasLoaded; //SSR check if window exists
+      var _this$state10 = this.state,
+          children = _this$state10.children,
+          siteHasLoaded = _this$state10.siteHasLoaded; //SSR check if window exists
 
       if (typeof window === "undefined") return /*#__PURE__*/_react["default"].createElement(_react["default"].Fragment, null, "Window error");
       var iteratedChildren = this.renderSlides();

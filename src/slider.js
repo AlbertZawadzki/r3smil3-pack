@@ -22,7 +22,7 @@ export default class Slider extends React.Component {
     this.sliderId; //Unique slider id
     this.sliderPosition = 0; //Defines how much has the slider moved
     this.sliderRealPosition = 0; //Defines how much has the slider moved relativily
-    this.sliderSize = 0; //Defines the width  or height of slider
+    this.sliderSize = 0; //Defines the width or height of slider
     this.slides = "Slides"; //Slides
     this.slidesBreaks = []; //All slides endings
     this.slidesWrapper = "Slides wrapper"; //Slides wrapper
@@ -111,19 +111,22 @@ export default class Slider extends React.Component {
             responsive[i].breakPoint > this.siteHeight) ||
           responsive[i].breakPoint > this.siteWidth
         ) {
-          this.setSettings(this.props.responsive[i]);
+          this.setCurrentSettings(this.props.responsive[i]);
         }
       }
     }
   };
 
-  resizeTasks = () => {
+  resizeTasks = () =>
     setTimeout(() => {
-      this.beforeMountTasks();
+      this.moveSliderRight();
+      this.moveSliderLeft();
+    }, 250);
+
+  recurrenceTasks = () =>
+    setInterval(() => {
       this.getSlidesBreaks();
-      this.singleMoveSliderRight();
-    }, 10);
-  };
+    }, 100);
 
   followPointer = () => {
     if (typeof window === "undefined") return;
@@ -410,6 +413,7 @@ export default class Slider extends React.Component {
 
   componentDidMount() {
     this.afterMountTasks();
+    this.recurrenceTasks();
   }
 
   componentDidUpdate() {
@@ -426,6 +430,7 @@ export default class Slider extends React.Component {
     this.slider.removeEventListener("mousedown", () => this.dragSlider());
     this.slider.removeEventListener("touchstart", () => this.dragSlider());
     clearInterval(this.autoPlay);
+    clearInterval(this.recurrenceTasks());
   }
 
   /* SLIDER MOVEMENT */
@@ -556,48 +561,13 @@ export default class Slider extends React.Component {
     }, 100);
   };
 
-  singleMoveSliderLeft() {
-    const { changeTime, vertical } = this.state;
-
-    this.attractableSlider = true;
-
-    this.sliderRealPosition =
-      this.slidesBreaks[--this.firstSlide] +
-      this.positionMover * this.oneSlidesSetLength;
-    this.sliderPosition = -(
-      this.slidesBreaks[this.firstSlide] +
-      this.positionMover * this.oneSlidesSetLength
-    );
-
-    this.slidesWrapper.style.transition = `margin ${changeTime}s`;
-    this.slidesWrapper.style.margin = vertical
-      ? `${this.sliderPosition}px 0 0 0`
-      : `0 0 0 ${this.sliderPosition}px`;
-
-    this.attractableSlider = false;
-    this.fakeInfinity();
-  }
-
   moveSliderLeft = () => {
-    const { arrows, changeTime } = this.state;
-    let i = 1;
-
-    this.singleMoveSliderLeft();
-    let interval = setInterval(() => {
-      if (++i >= arrows.slides - 1) {
-        window.clearInterval(interval);
-      } else {
-        this.singleMoveSliderLeft();
-      }
-    }, 1250 * changeTime);
-  };
-
-  singleMoveSliderRight = () => {
-    const { changeTime, vertical } = this.state;
+    const { arrows, changeTime, vertical } = this.state;
     this.attractableSlider = true;
+    this.firstSlide -= arrows.slides;
 
     this.sliderRealPosition =
-      this.slidesBreaks[++this.firstSlide] +
+      this.slidesBreaks[this.firstSlide] +
       this.positionMover * this.oneSlidesSetLength;
     this.sliderPosition = -(
       this.slidesBreaks[this.firstSlide] +
@@ -614,17 +584,25 @@ export default class Slider extends React.Component {
   };
 
   moveSliderRight = () => {
-    const { arrows, changeTime } = this.state;
-    let i = 1;
+    const { arrows, changeTime, vertical } = this.state;
+    this.attractableSlider = true;
+    this.firstSlide += arrows.slides;
 
-    this.singleMoveSliderRight();
-    let interval = setInterval(() => {
-      if (++i >= arrows.slides - 1) {
-        window.clearInterval(interval);
-      } else {
-        this.singleMoveSliderRight();
-      }
-    }, 1250 * changeTime);
+    this.sliderRealPosition =
+      this.slidesBreaks[this.firstSlide] +
+      this.positionMover * this.oneSlidesSetLength;
+    this.sliderPosition = -(
+      this.slidesBreaks[this.firstSlide] +
+      this.positionMover * this.oneSlidesSetLength
+    );
+
+    this.slidesWrapper.style.transition = `margin ${changeTime}s`;
+    this.slidesWrapper.style.margin = vertical
+      ? `${this.sliderPosition}px 0 0 0`
+      : `0 0 0 ${this.sliderPosition}px`;
+
+    this.attractableSlider = false;
+    this.fakeInfinity();
   };
 
   sliderIsFocused = (status) => {
@@ -636,7 +614,12 @@ export default class Slider extends React.Component {
   renderArrows = () => {
     const { arrows, children } = this.state;
 
-    if (!arrows.show || children.length < 2) return <></>;
+    if (
+      !arrows.show ||
+      children.length < 2 ||
+      this.oneSlidesSetLength < this.parentSize
+    )
+      return <></>;
     return (
       <>
         <div
