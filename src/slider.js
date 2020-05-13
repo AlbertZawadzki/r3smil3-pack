@@ -79,21 +79,31 @@ export default class Slider extends React.Component {
       vertical,
     } = settings;
 
-    if (typeof id === "undefined") console.error("Fatal error, no id given");
-    this.sliderId = `slider-${id}`;
-    this.slidesWrapperId = `slides-wrapper-${id}`;
+    if (typeof id === "undefined" && this.state.id === "undefined")
+      console.error("Fatal error, no id given");
 
-    if (typeof arrows !== "undefined")
-      this.setState({ arrows: { ...this.state.arrows, ...arrows } });
-    if (typeof autoPlay !== "undefined")
-      this.setState({ autoPlay: { ...this.state.autoPlay, ...autoPlay } });
-    if (typeof center !== "undefined")
-      this.setState({ center: { ...this.state.center, ...center } });
+    if (typeof arrows !== "undefined") {
+      Object.assign(this.state.arrows, arrows);
+      this.setState({ arrows: { ...this.state.arrows } });
+    }
+    if (typeof autoPlay !== "undefined") {
+      Object.assign(this.state.autoPlay, autoPlay);
+      this.setState({ autoPlay: { ...this.state.autoPlay } });
+    }
+    if (typeof center !== "undefined") {
+      Object.assign(this.state.center, center);
+      this.setState({ center: { ...this.state.center } });
+    }
     if (typeof changeTime !== "undefined")
       this.setState({ changeTime: changeTime / 1000 });
     if (typeof draggable !== "undefined") this.setState({ draggable });
     if (typeof fitToContainer !== "undefined")
       this.setState({ fitToContainer });
+    if (typeof id !== "undefined") {
+      this.sliderId = `slider-${id}`;
+      this.slidesWrapperId = `slides-wrapper-${id}`;
+      this.setState({ id });
+    }
     if (typeof rotatable !== "undefined") this.setState({ rotatable });
     if (typeof startNumber !== "undefined") this.setState({ startNumber });
     if (typeof vertical !== "undefined") this.setState({ vertical });
@@ -106,10 +116,13 @@ export default class Slider extends React.Component {
     //Check if responsive settings are set
     if (responsive && responsive.length > 0) {
       for (let i = 0; i < responsive.length; i++) {
+        responsive[i].vertical =
+          responsive[i].vertical !== undefined ? responsive[i].vertical : false;
+
         if (
           (responsive[i].vertical &&
             responsive[i].breakPoint > this.siteHeight) ||
-          responsive[i].breakPoint > this.siteWidth
+          (!responsive[i].vertical && responsive[i].breakPoint > this.siteWidth)
         ) {
           this.setCurrentSettings(this.props.responsive[i]);
         }
@@ -117,16 +130,22 @@ export default class Slider extends React.Component {
     }
   };
 
-  resizeTasks = () =>
-    setTimeout(() => {
-      this.moveSliderRight();
-      this.moveSliderLeft();
-    }, 250);
+  resizeTasks = () => {
+    this.setSiteSize();
+    this.setSliderSettings();
+
+    for (let i = 1; i < 5; i++) {
+      setTimeout(() => {
+        this.moveSliderRight();
+        this.moveSliderLeft();
+      }, 250 * i);
+    }
+  };
 
   recurrenceTasks = () =>
     setInterval(() => {
       this.getSlidesBreaks();
-    }, 100);
+    }, 10);
 
   followPointer = () => {
     if (typeof window === "undefined") return;
@@ -241,6 +260,18 @@ export default class Slider extends React.Component {
     }
   };
 
+  preventDefault = (event) => {
+    event.preventDefault();
+  };
+
+  blockScrolling = () => {
+    if (typeof window === "undefined") return;
+
+    window.addEventListener("touchmove", this.preventDefault, {
+      passive: false,
+    });
+  };
+
   setListeners = () => {
     if (typeof window === "undefined") return;
     window.addEventListener("resize", () => this.resizeTasks());
@@ -248,6 +279,7 @@ export default class Slider extends React.Component {
     window.addEventListener("touchmove", () => this.followPointer());
     window.addEventListener("mouseup", () => this.stopFollowingPointer());
     window.addEventListener("touchend", () => this.stopFollowingPointer());
+    window.addEventListener("scroll", () => this.blockScrolling());
   };
 
   afterMountTasks = () => {
@@ -337,6 +369,7 @@ export default class Slider extends React.Component {
     setTimeout(() => {
       const { fitToContainer, vertical } = this.state;
       let firstSlidePartiallyVisible = false;
+      let firstSet = false;
 
       for (let i = 0; i < this.slides.childNodes.length; i++) {
         //All slides have slide class name
@@ -369,8 +402,6 @@ export default class Slider extends React.Component {
           }
         }
 
-        let firstSettled = false;
-
         if (sliderPosition > slidePosition + dimension) {
           this.slides.childNodes[i].className += "invisible ";
         } else if (
@@ -379,10 +410,16 @@ export default class Slider extends React.Component {
         ) {
           this.slides.childNodes[i].className += "partial-first ";
         } else if (sliderPosition === slidePosition) {
-          this.slides.childNodes[i].className += firstSettled
+          this.slides.childNodes[i].className += "first ";
+          firstSet = true;
+        } else if (
+          slidePosition < sliderSize &&
+          slidePosition + dimension < sliderSize
+        ) {
+          this.slides.childNodes[i].className += firstSet
             ? "visible "
             : "first ";
-          firstSettled = true;
+          firstSet = true;
         } else if (slidePosition < sliderSize) {
           this.slides.childNodes[i].className += "partial ";
         } else if (slidePosition > sliderSize) {
@@ -391,7 +428,7 @@ export default class Slider extends React.Component {
           this.slides.childNodes[i].className += "unknown ";
         }
       }
-    }, 1250 * this.state.changeTime);
+    }, 1000 * this.state.changeTime);
 
   updateTasks = () => {
     const { vertical } = this.state;
@@ -427,6 +464,7 @@ export default class Slider extends React.Component {
     window.removeEventListener("touchmove", () => this.followPointer());
     window.removeEventListener("mouseup", () => this.stopFollowingPointer());
     window.removeEventListener("touchend", () => this.stopFollowingPointer());
+    window.removeEventListener("scroll", () => this.blockScrolling());
     this.slider.removeEventListener("mousedown", () => this.dragSlider());
     this.slider.removeEventListener("touchstart", () => this.dragSlider());
     clearInterval(this.autoPlay);
@@ -485,7 +523,7 @@ export default class Slider extends React.Component {
 
     setTimeout(() => {
       if (typeof this.props.onChange !== "undefined") this.props.onChange();
-    }, 1250 * changeTime);
+    }, 1000 * changeTime);
   };
 
   setClosestSlide = () => {
@@ -537,7 +575,7 @@ export default class Slider extends React.Component {
     //tacticle handlign
     if (window.event.touches !== undefined) {
       movement =
-        currentPointerPosition > this.previousPointerPosition ? 12 : -12;
+        currentPointerPosition > this.previousPointerPosition ? 27 : -27;
     }
 
     this.sliderPosition += movement;

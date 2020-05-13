@@ -69,18 +69,32 @@ var Slider = /*#__PURE__*/function (_React$Component) {
           rotatable = settings.rotatable,
           startNumber = settings.startNumber,
           vertical = settings.vertical;
-      if (typeof id === "undefined") console.error("Fatal error, no id given");
-      _this.sliderId = "slider-".concat(id);
-      _this.slidesWrapperId = "slides-wrapper-".concat(id);
-      if (typeof arrows !== "undefined") _this.setState({
-        arrows: _objectSpread({}, _this.state.arrows, {}, arrows)
-      });
-      if (typeof autoPlay !== "undefined") _this.setState({
-        autoPlay: _objectSpread({}, _this.state.autoPlay, {}, autoPlay)
-      });
-      if (typeof center !== "undefined") _this.setState({
-        center: _objectSpread({}, _this.state.center, {}, center)
-      });
+      if (typeof id === "undefined" && _this.state.id === "undefined") console.error("Fatal error, no id given");
+
+      if (typeof arrows !== "undefined") {
+        Object.assign(_this.state.arrows, arrows);
+
+        _this.setState({
+          arrows: _objectSpread({}, _this.state.arrows)
+        });
+      }
+
+      if (typeof autoPlay !== "undefined") {
+        Object.assign(_this.state.autoPlay, autoPlay);
+
+        _this.setState({
+          autoPlay: _objectSpread({}, _this.state.autoPlay)
+        });
+      }
+
+      if (typeof center !== "undefined") {
+        Object.assign(_this.state.center, center);
+
+        _this.setState({
+          center: _objectSpread({}, _this.state.center)
+        });
+      }
+
       if (typeof changeTime !== "undefined") _this.setState({
         changeTime: changeTime / 1000
       });
@@ -90,6 +104,16 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       if (typeof fitToContainer !== "undefined") _this.setState({
         fitToContainer: fitToContainer
       });
+
+      if (typeof id !== "undefined") {
+        _this.sliderId = "slider-".concat(id);
+        _this.slidesWrapperId = "slides-wrapper-".concat(id);
+
+        _this.setState({
+          id: id
+        });
+      }
+
       if (typeof rotatable !== "undefined") _this.setState({
         rotatable: rotatable
       });
@@ -109,7 +133,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
       if (responsive && responsive.length > 0) {
         for (var i = 0; i < responsive.length; i++) {
-          if (responsive[i].vertical && responsive[i].breakPoint > _this.siteHeight || responsive[i].breakPoint > _this.siteWidth) {
+          responsive[i].vertical = responsive[i].vertical !== undefined ? responsive[i].vertical : false;
+
+          if (responsive[i].vertical && responsive[i].breakPoint > _this.siteHeight || !responsive[i].vertical && responsive[i].breakPoint > _this.siteWidth) {
             _this.setCurrentSettings(_this.props.responsive[i]);
           }
         }
@@ -117,17 +143,23 @@ var Slider = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.resizeTasks = function () {
-      return setTimeout(function () {
-        _this.moveSliderRight();
+      _this.setSiteSize();
 
-        _this.moveSliderLeft();
-      }, 250);
+      _this.setSliderSettings();
+
+      for (var i = 1; i < 5; i++) {
+        setTimeout(function () {
+          _this.moveSliderRight();
+
+          _this.moveSliderLeft();
+        }, 250 * i);
+      }
     };
 
     _this.recurrenceTasks = function () {
       return setInterval(function () {
         _this.getSlidesBreaks();
-      }, 100);
+      }, 10);
     };
 
     _this.followPointer = function () {
@@ -254,6 +286,17 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       }
     };
 
+    _this.preventDefault = function (event) {
+      event.preventDefault();
+    };
+
+    _this.blockScrolling = function () {
+      if (typeof window === "undefined") return;
+      window.addEventListener("touchmove", _this.preventDefault, {
+        passive: false
+      });
+    };
+
     _this.setListeners = function () {
       if (typeof window === "undefined") return;
       window.addEventListener("resize", function () {
@@ -270,6 +313,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       });
       window.addEventListener("touchend", function () {
         return _this.stopFollowingPointer();
+      });
+      window.addEventListener("scroll", function () {
+        return _this.blockScrolling();
       });
     };
 
@@ -361,6 +407,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
             fitToContainer = _this$state3.fitToContainer,
             vertical = _this$state3.vertical;
         var firstSlidePartiallyVisible = false;
+        var firstSet = false;
 
         for (var i = 0; i < _this.slides.childNodes.length; i++) {
           //All slides have slide class name
@@ -380,15 +427,16 @@ var Slider = /*#__PURE__*/function (_React$Component) {
             }
           }
 
-          var firstSettled = false;
-
           if (sliderPosition > slidePosition + dimension) {
             _this.slides.childNodes[i].className += "invisible ";
           } else if (sliderPosition > slidePosition && sliderPosition <= slidePosition + dimension) {
             _this.slides.childNodes[i].className += "partial-first ";
           } else if (sliderPosition === slidePosition) {
-            _this.slides.childNodes[i].className += firstSettled ? "visible " : "first ";
-            firstSettled = true;
+            _this.slides.childNodes[i].className += "first ";
+            firstSet = true;
+          } else if (slidePosition < sliderSize && slidePosition + dimension < sliderSize) {
+            _this.slides.childNodes[i].className += firstSet ? "visible " : "first ";
+            firstSet = true;
           } else if (slidePosition < sliderSize) {
             _this.slides.childNodes[i].className += "partial ";
           } else if (slidePosition > sliderSize) {
@@ -397,7 +445,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
             _this.slides.childNodes[i].className += "unknown ";
           }
         }
-      }, 1250 * _this.state.changeTime);
+      }, 1000 * _this.state.changeTime);
     };
 
     _this.updateTasks = function () {
@@ -454,7 +502,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
 
       setTimeout(function () {
         if (typeof _this.props.onChange !== "undefined") _this.props.onChange();
-      }, 1250 * changeTime);
+      }, 1000 * changeTime);
     };
 
     _this.setClosestSlide = function () {
@@ -489,7 +537,7 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       var movement = currentPointerPosition - _this.previousPointerPosition; //tacticle handlign
 
       if (window.event.touches !== undefined) {
-        movement = currentPointerPosition > _this.previousPointerPosition ? 12 : -12;
+        movement = currentPointerPosition > _this.previousPointerPosition ? 27 : -27;
       }
 
       _this.sliderPosition += movement;
@@ -695,6 +743,9 @@ var Slider = /*#__PURE__*/function (_React$Component) {
       });
       window.removeEventListener("touchend", function () {
         return _this2.stopFollowingPointer();
+      });
+      window.removeEventListener("scroll", function () {
+        return _this2.blockScrolling();
       });
       this.slider.removeEventListener("mousedown", function () {
         return _this2.dragSlider();
