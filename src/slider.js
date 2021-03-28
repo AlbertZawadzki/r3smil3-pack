@@ -260,16 +260,12 @@ export default class Slider extends React.Component {
     }
   };
 
-  preventDefault = (event) => {
-    event.preventDefault();
-  };
-
   blockScrolling = () => {
     if (typeof window === "undefined") return;
 
-    window.addEventListener("touchmove", this.preventDefault, {
-      passive: false,
-    });
+    if (this.allowToDrag) {
+      event.preventDefault();
+    }
   };
 
   setListeners = () => {
@@ -279,7 +275,9 @@ export default class Slider extends React.Component {
     window.addEventListener("touchmove", () => this.followPointer());
     window.addEventListener("mouseup", () => this.stopFollowingPointer());
     window.addEventListener("touchend", () => this.stopFollowingPointer());
-    window.addEventListener("scroll", () => this.blockScrolling());
+    window.addEventListener("touchmove", () => this.blockScrolling(), {
+      passive: false,
+    });
   };
 
   afterMountTasks = () => {
@@ -464,7 +462,7 @@ export default class Slider extends React.Component {
     window.removeEventListener("touchmove", () => this.followPointer());
     window.removeEventListener("mouseup", () => this.stopFollowingPointer());
     window.removeEventListener("touchend", () => this.stopFollowingPointer());
-    window.removeEventListener("scroll", () => this.blockScrolling());
+    window.removeEventListener("touchmove", () => this.blockScrolling());
     this.slider.removeEventListener("mousedown", () => this.dragSlider());
     this.slider.removeEventListener("touchstart", () => this.dragSlider());
     clearInterval(this.autoPlay);
@@ -575,7 +573,7 @@ export default class Slider extends React.Component {
     //tacticle handlign
     if (window.event.touches !== undefined) {
       movement =
-        currentPointerPosition > this.previousPointerPosition ? 27 : -27;
+        currentPointerPosition > this.previousPointerPosition ? 23 : -23;
     }
 
     this.sliderPosition += movement;
